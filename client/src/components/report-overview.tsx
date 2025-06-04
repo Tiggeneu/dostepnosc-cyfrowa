@@ -44,8 +44,8 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
         blob = new Blob([data as string], { type: 'text/csv' });
         filename = `raport-dostepnosci-${scanId}.csv`;
       } else if (format === 'docx') {
-        blob = new Blob([data as string], { type: 'application/rtf' });
-        filename = `raport-dostepnosci-${scanId}.rtf`;
+        blob = new Blob([data as string], { type: 'text/html; charset=utf-8' });
+        filename = `raport-dostepnosci-${scanId}.html`;
       } else {
         return;
       }
