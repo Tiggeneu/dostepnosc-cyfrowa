@@ -107,7 +107,17 @@ async function performAccessibilityScan(scanId: number, url: string) {
     // Launch Puppeteer browser
     browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-features=TranslateUI',
+        '--disable-ipc-flooding-protection'
+      ]
     });
 
     const page = await browser.newPage();
@@ -131,7 +141,7 @@ async function performAccessibilityScan(scanId: number, url: string) {
       helpUrl: violation.helpUrl,
       nodes: violation.nodes.map(node => ({
         html: node.html,
-        target: node.target,
+        target: Array.isArray(node.target) ? node.target : [String(node.target)],
         failureSummary: node.failureSummary
       }))
     }));

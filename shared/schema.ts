@@ -17,6 +17,8 @@ export const scanResults = pgTable("scan_results", {
 export const insertScanResultSchema = createInsertSchema(scanResults).omit({
   id: true,
   scanDate: true,
+}).extend({
+  wcagLevel: z.enum(['A', 'AA', 'AAA']).optional(),
 });
 
 export type InsertScanResult = z.infer<typeof insertScanResultSchema>;
