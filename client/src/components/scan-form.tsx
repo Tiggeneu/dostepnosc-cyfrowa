@@ -49,12 +49,12 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
     enabled: !!currentScanId,
     refetchInterval: (data) => {
       // Stop polling when scan is complete or failed
-      if (data?.status === 'completed' || data?.status === 'failed') {
+      if (data?.data?.status === 'completed' || data?.data?.status === 'failed') {
         return false;
       }
       return 2000; // Poll every 2 seconds
     },
-  });
+  }) as any;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +79,8 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
     }
   };
 
-  const isScanning = scanMutation.isPending || (scanResult?.data?.status === 'pending');
-  const scanProgress = isScanning ? 50 : scanResult?.data?.status === 'completed' ? 100 : 0;
+  const isScanning = scanMutation.isPending || (scanResult?.status === 'pending');
+  const scanProgress = isScanning ? 50 : scanResult?.status === 'completed' ? 100 : 0;
 
   return (
     <Card className="scan-card p-6 -mt-8 relative z-10">
@@ -147,17 +147,17 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
             <Progress value={scanProgress} className="h-2" />
             <div className="text-center mt-3">
               <small className="text-gray-600">
-                {scanResult?.data?.status === 'pending' ? 'Analyzing accessibility violations...' : 'Initializing scan...'}
+                {scanResult?.status === 'pending' ? 'Analyzing accessibility violations...' : 'Initializing scan...'}
               </small>
             </div>
           </div>
         )}
 
         {/* Error State */}
-        {scanResult?.data?.status === 'failed' && (
+        {scanResult?.status === 'failed' && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 text-sm">
-              <strong>Scan failed:</strong> {scanResult?.data?.errorMessage || 'An unexpected error occurred.'}
+              <strong>Scan failed:</strong> {scanResult?.errorMessage || 'An unexpected error occurred.'}
             </p>
           </div>
         )}

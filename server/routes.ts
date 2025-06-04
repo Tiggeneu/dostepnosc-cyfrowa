@@ -291,7 +291,11 @@ function analyzeHTMLContent(html: string, url: string, wcagLevel: 'A' | 'AA' | '
 
   // Check for proper heading structure
   const headingRegex = /<h([1-6])[^>]*>/gi;
-  const headings = [...html.matchAll(headingRegex)];
+  const headings = [];
+  let match;
+  while ((match = headingRegex.exec(html)) !== null) {
+    headings.push(match);
+  }
   let lastLevel = 0;
   headings.forEach((match, index) => {
     const level = parseInt(match[1]);

@@ -15,7 +15,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
   const { data: scanResult } = useQuery({
     queryKey: ["/api/scan", scanId],
     enabled: !!scanId,
-  });
+  }) as any;
 
   const exportMutation = useMutation({
     mutationFn: async (format: 'pdf' | 'json' | 'docx') => {
