@@ -59,7 +59,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
 
   return (
     <div className="report-section mt-8">
-      <h3 className="text-xl font-bold mb-6">Accessibility Violations</h3>
+      <h3 className="text-xl font-bold mb-6">Naruszenia Dostępności</h3>
       
       <div className="space-y-6">
         {violations.map((violation, index) => (
