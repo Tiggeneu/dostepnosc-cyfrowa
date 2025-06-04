@@ -83,8 +83,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (format === 'docx') {
         const docxBuffer = await generateWordReport(scanResult, scanId);
+        
+        // Extract domain from URL for filename
+        let domainName = '';
+        try {
+          const url = new URL(scanResult.url);
+          domainName = url.hostname.replace(/^www\./, '').replace(/\./g, '-');
+        } catch {
+          domainName = 'strona';
+        }
+        
+        const filename = `raport-dostepnosci-${domainName}-${scanId}.docx`;
+        
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.docx"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(docxBuffer);
       } else {
         res.status(400).json({ message: "Obsługiwany jest tylko format Word (.docx)" });
