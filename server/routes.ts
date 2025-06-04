@@ -734,7 +734,8 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
           text: "RAPORT Z OCENY DOSTĘPNOŚCI",
           bold: true,
           size: 36,
-          color: "1e40af"
+          color: "1e40af",
+          font: "Calibri"
         }),
       ],
       alignment: AlignmentType.CENTER,
@@ -746,7 +747,8 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
           text: "Zgodność z WCAG 2.1 Poziom AA",
           size: 24,
           color: "64748b",
-          italics: true
+          italics: true,
+          font: "Calibri"
         }),
       ],
       alignment: AlignmentType.CENTER,
@@ -762,7 +764,8 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
           text: "O ocenie",
           bold: true,
           size: 28,
-          color: "1e40af"
+          color: "1e40af",
+          font: "Calibri"
         }),
       ],
       heading: HeadingLevel.HEADING_1,
@@ -786,11 +789,11 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
           new TableCell({
             children: [
               new Paragraph({
-                children: [new TextRun({ text: "Autor lub autorka raportu:", bold: true, size: 22 })],
+                children: [new TextRun({ text: "Autor lub autorka raportu:", bold: true, size: 22, font: "Calibri" })],
                 spacing: { after: 100 }
               }),
               new Paragraph({
-                children: [new TextRun({ text: "    Analizator Dostępności Web", size: 20 })],
+                children: [new TextRun({ text: "    Analizator Dostępności Web", size: 20, font: "Calibri" })],
                 spacing: { after: 200 }
               })
             ],
@@ -1962,8 +1965,18 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
     })
   );
 
-  // Create document
+  // Create document with default font settings
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: "Calibri",
+            size: 22
+          }
+        }
+      }
+    },
     sections: [
       {
         properties: {},
