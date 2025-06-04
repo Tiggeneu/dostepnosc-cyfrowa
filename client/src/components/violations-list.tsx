@@ -52,6 +52,16 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
     }
   };
 
+  const translateImpact = (impact: string) => {
+    switch (impact) {
+      case 'critical': return 'KRYTYCZNY';
+      case 'serious': return 'POWAŻNY';
+      case 'moderate': return 'UMIARKOWANY';
+      case 'minor': return 'DROBNY';
+      default: return impact.toUpperCase();
+    }
+  };
+
   const getWcagReference = (tags: string[]) => {
     const wcagTag = tags.find(tag => tag.startsWith('wcag'));
     return wcagTag ? wcagTag.replace('wcag', 'WCAG ').toUpperCase() : 'WCAG';
@@ -71,12 +81,12 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
               <div>
                 <h5 className="text-lg font-semibold mb-2">{violation.help}</h5>
                 <Badge className={`${getSeverityBadgeColor(violation.impact)} text-xs font-semibold`}>
-                  {violation.impact.toUpperCase()}
+                  {translateImpact(violation.impact)}
                 </Badge>
               </div>
               <div className="text-right">
                 <div className="font-semibold text-gray-900">
-                  {violation.nodes.length} element{violation.nodes.length !== 1 ? 's' : ''}
+                  {violation.nodes.length} element{violation.nodes.length !== 1 ? 'ów' : ''}
                 </div>
                 <small className="text-gray-600">{getWcagReference(violation.tags)}</small>
               </div>
@@ -86,7 +96,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
 
             {violation.nodes.length > 0 && (
               <div className="mb-4">
-                <h6 className="font-semibold mb-2">Affected Elements:</h6>
+                <h6 className="font-semibold mb-2">Dotknięte Elementy:</h6>
                 <div className="code-snippet bg-gray-100 border rounded-lg p-3 overflow-x-auto">
                   <pre className="text-sm">
                     {violation.nodes.slice(0, 3).map((node, nodeIndex) => (
@@ -96,7 +106,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
                     ))}
                     {violation.nodes.length > 3 && (
                       <div className="text-gray-600 text-xs mt-2">
-                        ... and {violation.nodes.length - 3} more element{violation.nodes.length - 3 !== 1 ? 's' : ''}
+                        ... i {violation.nodes.length - 3} więcej element{violation.nodes.length - 3 !== 1 ? 'ów' : ''}
                       </div>
                     )}
                   </pre>
@@ -107,7 +117,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h6 className="font-semibold mb-2 flex items-center">
                 <Lightbulb className="w-4 h-4 text-yellow-500 mr-2" />
-                How to Fix This Issue:
+                Jak Naprawić Ten Problem:
               </h6>
               <p className="text-sm text-gray-700 mb-2">
                 {violation.description}
@@ -118,7 +128,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm"
               >
-                Learn more about this rule
+                Dowiedz się więcej o tej regule
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             </div>
