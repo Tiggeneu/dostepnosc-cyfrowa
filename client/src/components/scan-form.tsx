@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Info } from "lucide-react";
 
 interface ScanFormProps {
   onScanInitiated: (scanId: number) => void;
@@ -15,13 +16,14 @@ interface ScanFormProps {
 
 export default function ScanForm({ onScanInitiated }: ScanFormProps) {
   const [url, setUrl] = useState("");
+  const [wcagLevel, setWcagLevel] = useState<'A' | 'AA' | 'AAA'>('AA');
   const [currentScanId, setCurrentScanId] = useState<number | null>(null);
   const { toast } = useToast();
 
   // Start scan mutation
   const scanMutation = useMutation({
-    mutationFn: async (url: string) => {
-      const response = await apiRequest("POST", "/api/scan", { url });
+    mutationFn: async (data: { url: string; wcagLevel: 'A' | 'AA' | 'AAA' }) => {
+      const response = await apiRequest("POST", "/api/scan", data);
       return await response.json();
     },
     onSuccess: (data) => {
@@ -67,7 +69,7 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
 
     try {
       new URL(url);
-      scanMutation.mutate(url);
+      scanMutation.mutate({ url, wcagLevel });
     } catch {
       toast({
         title: "Invalid URL",
@@ -77,13 +79,13 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
     }
   };
 
-  const isScanning = scanMutation.isPending || (scanResult?.status === 'pending');
-  const scanProgress = isScanning ? 50 : scanResult?.status === 'completed' ? 100 : 0;
+  const isScanning = scanMutation.isPending || (scanResult?.data?.status === 'pending');
+  const scanProgress = isScanning ? 50 : scanResult?.data?.status === 'completed' ? 100 : 0;
 
   return (
     <Card className="scan-card p-6 -mt-8 relative z-10">
       <form onSubmit={handleSubmit}>
-        <div className="grid md:grid-cols-4 gap-4 items-end">
+        <div className="grid md:grid-cols-5 gap-4 items-end">
           <div className="md:col-span-3">
             <Label htmlFor="urlInput" className="text-sm font-semibold">
               Website URL
@@ -97,6 +99,22 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
               className="url-input mt-1"
               disabled={isScanning}
             />
+          </div>
+          <div>
+            <Label htmlFor="wcagLevel" className="text-sm font-semibold flex items-center">
+              WCAG Level
+              <Info className="w-3 h-3 ml-1 text-gray-400" />
+            </Label>
+            <Select value={wcagLevel} onValueChange={(value: 'A' | 'AA' | 'AAA') => setWcagLevel(value)} disabled={isScanning}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="A">Level A (Basic)</SelectItem>
+                <SelectItem value="AA">Level AA (Standard)</SelectItem>
+                <SelectItem value="AAA">Level AAA (Enhanced)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Button
@@ -129,17 +147,17 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
             <Progress value={scanProgress} className="h-2" />
             <div className="text-center mt-3">
               <small className="text-gray-600">
-                {scanResult?.status === 'pending' ? 'Analyzing accessibility violations...' : 'Initializing scan...'}
+                {scanResult?.data?.status === 'pending' ? 'Analyzing accessibility violations...' : 'Initializing scan...'}
               </small>
             </div>
           </div>
         )}
 
         {/* Error State */}
-        {scanResult?.status === 'failed' && (
+        {scanResult?.data?.status === 'failed' && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 text-sm">
-              <strong>Scan failed:</strong> {scanResult.errorMessage || 'An unexpected error occurred.'}
+              <strong>Scan failed:</strong> {scanResult?.data?.errorMessage || 'An unexpected error occurred.'}
             </p>
           </div>
         )}
