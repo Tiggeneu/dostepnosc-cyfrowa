@@ -777,6 +777,12 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
   const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, AlignmentType, WidthType, HeadingLevel, BorderStyle } = await import('docx');
   
   const currentDate = new Date().toLocaleDateString('pl-PL');
+  const fullDate = new Date().toLocaleDateString('pl-PL', { 
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
   const url = scanResult.url || 'Nieznany URL';
   const totalViolations = scanResult.violations?.length || 0;
   const passedTests = scanResult.passedTests || 0;
@@ -786,15 +792,15 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
   // Create document sections
   const children = [];
 
-  // Header
+  // Main Header - Professional title
   children.push(
     new Paragraph({
       children: [
         new TextRun({
-          text: "RAPORT DOSTĘPNOŚCI WEB",
+          text: "RAPORT Z OCENY DOSTĘPNOŚCI",
           bold: true,
-          size: 32,
-          color: "2563eb"
+          size: 36,
+          color: "1e40af"
         }),
       ],
       alignment: AlignmentType.CENTER,
@@ -803,29 +809,406 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
     new Paragraph({
       children: [
         new TextRun({
-          text: "Analiza zgodności WCAG 2.1",
+          text: "Zgodność z WCAG 2.1 Poziom AA",
           size: 24,
-          color: "64748b"
+          color: "64748b",
+          italics: true
         }),
       ],
       alignment: AlignmentType.CENTER,
-      spacing: { after: 400 }
+      spacing: { after: 600 }
     })
   );
 
-  // Summary section title
+  // Section: O ocenie
   children.push(
     new Paragraph({
       children: [
         new TextRun({
-          text: "PODSUMOWANIE SKANOWANIA",
+          text: "O ocenie",
+          bold: true,
+          size: 28,
+          color: "1e40af"
+        }),
+      ],
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 400, after: 300 }
+    })
+  );
+
+  const aboutTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE, size: 0 },
+      bottom: { style: BorderStyle.NONE, size: 0 },
+      left: { style: BorderStyle.NONE, size: 0 },
+      right: { style: BorderStyle.NONE, size: 0 },
+      insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+      insideVertical: { style: BorderStyle.NONE, size: 0 },
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Autor lub autorka raportu:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "    Analizator Dostępności Web", size: 20 })],
+                spacing: { after: 200 }
+              })
+            ],
+            width: { size: 50, type: WidthType.PERCENTAGE }
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Ocena zlecona przez:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "    Użytkownik systemu", size: 20 })],
+                spacing: { after: 200 }
+              })
+            ],
+            width: { size: 50, type: WidthType.PERCENTAGE }
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Data oceny:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `    ${fullDate}`, size: 20 })],
+                spacing: { after: 200 }
+              })
+            ],
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "ID raportu:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `    #${scanId}`, size: 20, bold: true })],
+                spacing: { after: 200 }
+              })
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  children.push(aboutTable);
+
+  // Streszczenie oceny
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Streszczenie oceny",
           bold: true,
           size: 24,
           color: "1e40af"
         }),
       ],
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 400, after: 200 }
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Przeprowadzono automatyczną analizę dostępności witryny internetowej pod kątem zgodności z wytycznymi WCAG 2.1 poziom AA. Zidentyfikowano ${totalViolations} naruszeń dostępności wymagających uwagi. Ocena obejmowała ${elementsScanned} elementów strony, z których ${passedTests} przeszło pomyślnie testy dostępności. Ogólny wynik zgodności wynosi ${complianceScore}%.`,
+          size: 22
+        }),
+      ],
+      spacing: { after: 400 }
+    })
+  );
+
+  // Zakres oceny
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Zakres oceny",
+          bold: true,
+          size: 24,
+          color: "1e40af"
+        }),
+      ],
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 400, after: 200 }
+    })
+  );
+
+  const scopeTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE, size: 0 },
+      bottom: { style: BorderStyle.NONE, size: 0 },
+      left: { style: BorderStyle.NONE, size: 0 },
+      right: { style: BorderStyle.NONE, size: 0 },
+      insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+      insideVertical: { style: BorderStyle.NONE, size: 0 },
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Nazwa witryny:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `    ${url}`, size: 20 })],
+                spacing: { after: 200 }
+              })
+            ],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Zakres ocenianych zasobów:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ 
+                  text: "    Ocena obejmuje główną stronę internetową wraz z jej elementami strukturalnymi i treścią. Analiza została przeprowadzona przy użyciu narzędzi automatycznego testowania zgodności z WCAG 2.1.", 
+                  size: 20 
+                })],
+                spacing: { after: 200 }
+              })
+            ],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Wersja WCAG:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "    2.1", size: 20, bold: true })],
+                spacing: { after: 200 }
+              })
+            ],
+            width: { size: 50, type: WidthType.PERCENTAGE }
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Poziom zgodności:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "    AA", size: 20, bold: true })],
+                spacing: { after: 200 }
+              })
+            ],
+            width: { size: 50, type: WidthType.PERCENTAGE }
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Podstawowy poziom obsługi dostępności:", bold: true, size: 22 })],
+                spacing: { after: 100 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ 
+                  text: "    Ocena została przeprowadzona z perspektywy podstawowego poziomu dostępności, z uwzględnieniem potrzeb osób niewidomych (czytniki ekranu), słabowidzących (kontrast, skalowalność), z niepełnosprawnościami ruchowymi (nawigacja klawiaturą), z trudnościami poznawczymi i językowymi.", 
+                  size: 20 
+                })],
+                spacing: { after: 200 }
+              })
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  children.push(scopeTable);
+
+  // Szczegółowe wyniki audytu
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Szczegółowe wyniki audytu",
+          bold: true,
+          size: 28,
+          color: "1e40af"
+        }),
+      ],
       heading: HeadingLevel.HEADING_1,
+      spacing: { before: 600, after: 200 }
+    })
+  );
+
+  // Podsumowanie wyników
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Podsumowanie",
+          bold: true,
+          size: 24,
+          color: "1e40af"
+        }),
+      ],
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 400, after: 200 }
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Sporządzony na dzień ${currentDate} z oceny kryteriów sukcesu WCAG 2.1 AA.`,
+          size: 22
+        }),
+      ],
+      spacing: { after: 300 }
+    })
+  );
+
+  // Tabela podsumowania wyników
+  const summaryResultsTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 1 },
+      bottom: { style: BorderStyle.SINGLE, size: 1 },
+      left: { style: BorderStyle.SINGLE, size: 1 },
+      right: { style: BorderStyle.SINGLE, size: 1 },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
+      insideVertical: { style: BorderStyle.SINGLE, size: 1 },
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "    " + passedTests.toString(), bold: true, size: 36, color: "16a34a" })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 150, after: 150 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "Spełnione", bold: true, size: 20 })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 150 }
+              })
+            ],
+            width: { size: 25, type: WidthType.PERCENTAGE },
+            shading: { fill: "f0fdf4" }
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "    " + totalViolations.toString(), bold: true, size: 36, color: "dc2626" })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 150, after: 150 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "Niespełnione", bold: true, size: 20 })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 150 }
+              })
+            ],
+            width: { size: 25, type: WidthType.PERCENTAGE },
+            shading: { fill: "fef2f2" }
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "    0", bold: true, size: 36, color: "d97706" })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 150, after: 150 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "Nie można powiedzieć", bold: true, size: 18 })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 150 }
+              })
+            ],
+            width: { size: 25, type: WidthType.PERCENTAGE },
+            shading: { fill: "fffbeb" }
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "    0", bold: true, size: 36, color: "6b7280" })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 150, after: 150 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "Nie dotyczy", bold: true, size: 20 })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 150 }
+              })
+            ],
+            width: { size: 25, type: WidthType.PERCENTAGE },
+            shading: { fill: "f9fafb" }
+          }),
+        ],
+      }),
+    ],
+  });
+
+  children.push(summaryResultsTable);
+
+  // Dodatkowe informacje
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Wynik zgodności:",
+          bold: true,
+          size: 22
+        }),
+        new TextRun({
+          text: ` ${complianceScore}%`,
+          bold: true,
+          size: 28,
+          color: complianceScore >= 90 ? "16a34a" : complianceScore >= 70 ? "d97706" : "dc2626"
+        }),
+      ],
       spacing: { before: 300, after: 200 }
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Przeskanowane elementy:",
+          bold: true,
+          size: 22
+        }),
+        new TextRun({
+          text: ` ${elementsScanned}`,
+          size: 22,
+          color: "2563eb"
+        }),
+      ],
+      spacing: { after: 400 }
     })
   );
 

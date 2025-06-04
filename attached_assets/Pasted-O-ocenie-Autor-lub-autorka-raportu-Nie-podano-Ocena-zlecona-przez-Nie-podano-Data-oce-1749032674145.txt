@@ -1,0 +1,330 @@
+O ocenie
+
+Autor lub autorka raportu:
+    Nie podano. 
+Ocena zlecona przez:
+    Nie podano. 
+Data oceny
+    Wed Jun 04 2025
+
+Streszczenie oceny
+Nie podano.
+Zakres oceny
+
+Nazwa witryny
+    Publiczna witryna internetowa Starostwa Powiatowego w Bielsku-Białej 
+Zakres ocenianych zasobów
+    Ocena obejmuje główną witrynę publiczną dostępną pod adresem https://www.powiat.bielsko.pl/ wraz z jej podstronami i zasobami (np. aktualności, kontakt, formularze, dokumenty do pobrania). Ocenie nie podlegają zasoby zewnętrzne otwierające się w nowych domenach (np. serwisy partnerów, systemy zewnętrzne do składania wniosków). 
+Wersja WCAG
+    2.1 
+Poziom zgodności
+    AA 
+Podstawowy poziom obsługi dostępności
+    Ocena została przeprowadzona z perspektywy podstawowego poziomu dostępności, z uwzględnieniem potrzeb osób: niewidomych (czytniki ekranu), słabowidzących (kontrast, skalowalność), z niepełnosprawnościami ruchowymi (nawigacja klawiaturą), z trudnościami poznawczymi i językowymi. 
+Dodatkowe wymagania dotyczące oceny
+    Uwzględniono responsywność i dostępność na urządzeniach mobilnych. W ocenie wykorzystano zarówno automatyczne narzędzia (np. WAVE, axe, Lighthouse), jak i testy ręczne.
+
+Szczegółowe wyniki audytu
+Podsumowanie
+
+Sporządzony na dzień 0 z oceny 50 WCAG 2.1 AA Success Criteria.
+
+    0 Spełnione
+    0 Niespełnione
+    0 Nie można powiedzieć
+    0 Nie dotyczy
+    50 Nietestowane
+
+Wszystkie wyniki
+1 Postrzegalność
+1.1 Alternatywa tekstowa
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+1.1.1: Treść nietekstowa 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.1.1
+1.2 Multimedia
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+1.2.1: Tylko audio lub tylko wideo (nagranie) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.2.1
+1.2.2: Napisy rozszerzone (nagranie) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.2.2
+1.2.3: Audiodeskrypcja lub alternatywa tekstowa dla mediów (nagranie) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.2.3
+1.2.4: Napisy rozszerzone (na żywo) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.2.4
+1.2.5: Audiodeskrypcja (nagranie) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.2.5
+1.3 Możliwość adaptacji
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+1.3.1: Informacje i relacje 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.3.1
+1.3.2: Zrozumiała kolejność 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.3.2
+1.3.3: Właściwości zmysłowe 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.3.3
+1.3.4: Orientacja 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.3.4
+1.3.5: Określenie pożądanej wartości 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.3.5
+1.4 Rozróżnialność
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+1.4.1: Użycie koloru 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.1
+1.4.2: Kontrola odtwarzania dźwięku 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.2
+1.4.3: Kontrast (minimalny) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.3
+1.4.4: Zmiana rozmiaru tekstu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.4
+1.4.5: Obrazy tekstu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.5
+1.4.10: Dopasowanie do ekranu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.10
+1.4.11: Kontrast elementów nietekstowych 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.11
+1.4.12: Odstępy w tekście 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.12
+1.4.13: Treść spod kursora lub fokusu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 1.4.13
+2 Funkcjonalność
+2.1 Dostępność z klawiatury
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+2.1.1: Klawiatura 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.1.1
+2.1.2: Bez pułapki na klawiaturę 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.1.2
+2.1.4: Jednoznakowe skróty klawiaturowe 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.1.4
+2.2 Wystarczający czas
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+2.2.1: Dostosowanie czasu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.2.1
+2.2.2: Pauza, zatrzymanie, ukrycie 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.2.2
+2.3 Ataki padaczki
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+2.3.1: Trzy błyski lub wartości poniżej progu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.3.1
+2.4 Możliwość nawigacji
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+2.4.1: Możliwość pominięcia bloków 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.1
+2.4.2: Tytuły stron 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.2
+2.4.3: Kolejność fokusu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.3
+2.4.4: Cel łącza (w kontekście) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.4
+2.4.5: Wiele dróg 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.5
+2.4.6: Nagłówki i etykiety 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.6
+2.4.7: Widoczny fokus 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.4.7
+2.5 Metody obsługi
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+2.5.1: Gesty dotykowe 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.5.1
+2.5.2: Rezygnacja ze wskazania 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.5.2
+2.5.3: Etykieta w nazwie 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.5.3
+2.5.4: Aktywowanie ruchem 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 2.5.4
+3 Zrozumiałość
+3.1 Możliwość odczytania
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+3.1.1: Język strony 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.1.1
+3.1.2: Język części 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.1.2
+3.2 Przewidywalność
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+3.2.1: Po otrzymaniu fokusu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.2.1
+3.2.2: Podczas wprowadzania danych 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.2.2
+3.2.3: Spójna nawigacja 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.2.3
+3.2.4: Spójna identyfikacja 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.2.4
+3.3 Pomoc przy wprowadzaniu informacji
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+3.3.1: Identyfikacja błędu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.3.1
+3.3.2: Etykiety lub instrukcje 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.3.2
+3.3.3: Sugestie korekty błędów 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.3.3
+3.3.4: Zapobieganie błędom (prawnym, finansowym, w danych) 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 3.3.4
+4 Solidność
+4.1 Kompatybilność
+Kryterium sukcesu 	Wynik 	Obserwacje 	Edytuj
+4.1.1: Poprawność kodu 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 4.1.1
+4.1.2: Nazwa, rola, wartość 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 4.1.2
+4.1.3: Komunikaty o stanie 	
+Wyniki dla całej próbki
+
+Nietestowane
+		Edit 4.1.3
+Próbka ocenianych stron internetowych
+
+    Reprezentuje układ główny, nawigację i strukturę strony. - https://www.powiat.bielsko.pl/
+    Testowanie dynamicznych treści oraz dat publikacji. - https://www.powiat.bielsko.pl/aktualnosci-lista.html
+    Testowanie danych kontaktowych. - https://www.powiat.bielsko.pl/strona-43-kontakt.html 
+
+Technologie internetowe
+
+HTML,CSS,WAI-ARIA,JavaScript,SVG,PDF
+Specyfikacja metod oceny
+
+Nie podano.
