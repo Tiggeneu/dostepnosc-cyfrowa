@@ -169,26 +169,82 @@ Help URL: ${v.helpUrl}
 
 
 
-// Background scan function using alternative approach
+// Professional accessibility scan using Puppeteer and axe-core
 async function performAccessibilityScan(scanId: number, url: string, wcagLevel: 'A' | 'AA' | 'AAA' = 'AA') {
+  let browser;
   try {
-    // Use curl to fetch the webpage content
-    const curlResult = execSync(`curl -L --max-time 10 --user-agent "Mozilla/5.0 (compatible; AccessibilityBot/1.0)" "${url}"`, 
-      { encoding: 'utf8', maxBuffer: 1024 * 1024 * 5 });
+    // Launch browser with proper accessibility testing configuration
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor'
+      ]
+    });
+
+    const page = await browser.newPage();
     
-    // Analyze the HTML content for accessibility issues
-    const violations = analyzeHTMLContent(curlResult, url, wcagLevel);
+    // Set user agent and viewport
+    await page.setUserAgent('Mozilla/5.0 (compatible; AccessibilityBot/1.0)');
+    await page.setViewport({ width: 1280, height: 720 });
     
-    // Calculate metrics based on analysis
-    const totalViolations = violations.length;
-    const passedTests = calculatePassedTests(curlResult, wcagLevel);
-    const elementsScanned = countHTMLElements(curlResult);
+    // Navigate to the page
+    await page.goto(url, { 
+      waitUntil: 'networkidle2', 
+      timeout: 30000 
+    });
+    
+    // Inject axe-core for accessibility testing
+    await page.addScriptTag({
+      url: 'https://unpkg.com/axe-core@latest/axe.min.js'
+    });
+    
+    // Configure and run axe accessibility analysis
+    const results = await page.evaluate((wcagLevel) => {
+      const tags = [];
+      if (wcagLevel === 'A' || wcagLevel === 'AA' || wcagLevel === 'AAA') tags.push('wcag2a');
+      if (wcagLevel === 'AA' || wcagLevel === 'AAA') tags.push('wcag2aa');
+      if (wcagLevel === 'AAA') tags.push('wcag2aaa');
+      
+      return (window as any).axe.run({
+        tags: tags,
+        resultTypes: ['violations', 'passes']
+      });
+    }, wcagLevel);
+
+    // Process violations with Polish translations
+    const processedViolations = results.violations.map((violation: any) => ({
+      id: violation.id,
+      impact: violation.impact,
+      tags: violation.tags,
+      description: translateViolationDescription(violation.id),
+      help: translateViolationHelp(violation.id),
+      helpUrl: violation.helpUrl,
+      nodes: violation.nodes.map((node: any) => ({
+        html: node.html,
+        target: node.target,
+        failureSummary: translateFailureSummary(violation.id, node.any?.[0]?.message || node.failureSummary)
+      }))
+    }));
+
+    // Calculate metrics
+    const totalViolations = processedViolations.length;
+    const passedTests = results.passes.length;
+    const elementsScanned = await page.evaluate(() => document.querySelectorAll('*').length);
     const complianceScore = Math.round((passedTests / (passedTests + totalViolations)) * 100);
 
-    // Update scan result
+    // Update scan result with real data
     await storage.updateScanResult(scanId, {
       status: 'completed',
-      violations: violations as any,
+      violations: processedViolations as any,
       passedTests,
       elementsScanned,
       complianceScore,
@@ -196,14 +252,76 @@ async function performAccessibilityScan(scanId: number, url: string, wcagLevel: 
     });
 
   } catch (error) {
-    console.error('Scan failed:', error);
+    console.error('Accessibility scan failed:', error);
     
     // Update scan result with error
     await storage.updateScanResult(scanId, {
       status: 'failed',
-      errorMessage: error instanceof Error ? error.message : 'Unable to access the website',
+      errorMessage: error instanceof Error ? error.message : 'Nie udało się przeskanować strony internetowej',
     });
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
+}
+
+// Translation functions for Polish accessibility messages
+function translateViolationDescription(violationId: string): string {
+  const translations: { [key: string]: string } = {
+    'image-alt': 'Obrazy muszą mieć tekst alternatywny',
+    'color-contrast': 'Elementy muszą mieć wystarczający kontrast kolorów',
+    'heading-order': 'Nagłówki powinny być ułożone w logicznej kolejności',
+    'label': 'Elementy formularza muszą mieć etykiety',
+    'link-name': 'Linki muszą mieć rozpoznawalną nazwę',
+    'button-name': 'Przyciski muszą mieć rozpoznawalną nazwę',
+    'aria-valid-attr': 'Atrybuty ARIA muszą być prawidłowe',
+    'aria-required-attr': 'Wymagane atrybuty ARIA muszą być obecne',
+    'html-has-lang': 'Element <html> musi mieć atrybut lang',
+    'landmark-one-main': 'Strona musi mieć jeden region główny',
+    'page-has-heading-one': 'Strona musi mieć nagłówek pierwszego poziomu',
+    'region': 'Cała treść strony musi być zawarta w regionach',
+    'skip-link': 'Strona powinna mieć łącze pomijania'
+  };
+  return translations[violationId] || 'Naruszenie dostępności';
+}
+
+function translateViolationHelp(violationId: string): string {
+  const translations: { [key: string]: string } = {
+    'image-alt': 'Upewnij się, że każdy element obrazu ma znaczący tekst alternatywny',
+    'color-contrast': 'Zapewnij wystarczający kontrast między kolorami pierwszego planu i tła',
+    'heading-order': 'Nagłówki powinny wzrastać o jeden poziom naraz',
+    'label': 'Każdy element formularza powinien mieć powiązaną etykietę',
+    'link-name': 'Linki muszą mieć tekst opisujący ich cel',
+    'button-name': 'Przyciski muszą mieć tekst opisujący ich funkcję',
+    'aria-valid-attr': 'Sprawdź poprawność atrybutów ARIA',
+    'aria-required-attr': 'Dodaj wymagane atrybuty ARIA',
+    'html-has-lang': 'Dodaj atrybut lang do elementu <html>',
+    'landmark-one-main': 'Oznacz główną treść za pomocą <main> lub role="main"',
+    'page-has-heading-one': 'Dodaj nagłówek h1 na stronie',
+    'region': 'Umieść treść w odpowiednich regionach semantycznych',
+    'skip-link': 'Dodaj łącze pomijania na początku strony'
+  };
+  return translations[violationId] || 'Sprawdź dokumentację WCAG';
+}
+
+function translateFailureSummary(violationId: string, originalMessage?: string): string {
+  const translations: { [key: string]: string } = {
+    'image-alt': 'Element nie ma atrybutu alt lub ma pusty tekst alt',
+    'color-contrast': 'Element ma niewystarczający kontrast kolorów',
+    'heading-order': 'Nieprawidłowa kolejność nagłówków',
+    'label': 'Element formularza nie ma powiązanej etykiety',
+    'link-name': 'Link nie ma rozpoznawalnej nazwy',
+    'button-name': 'Przycisk nie ma rozpoznawalnej nazwy',
+    'aria-valid-attr': 'Nieprawidłowy atrybut ARIA',
+    'aria-required-attr': 'Brakuje wymaganego atrybutu ARIA',
+    'html-has-lang': 'Element <html> nie ma atrybutu lang',
+    'landmark-one-main': 'Brak głównego regionu na stronie',
+    'page-has-heading-one': 'Brak nagłówka pierwszego poziomu',
+    'region': 'Treść nie jest zawarta w regionach',
+    'skip-link': 'Brak łącza pomijania'
+  };
+  return translations[violationId] || originalMessage || 'Wykryto naruszenie dostępności';
 }
 
 // Analyze HTML content for accessibility violations
