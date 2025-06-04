@@ -86,21 +86,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.json"`);
         res.json(scanResult);
       } else if (format === 'pdf') {
-        // Generate PDF report content
-        const pdfContent = generateReportContent(scanResult, 'pdf');
-        res.json({
-          message: "PDF report generated successfully",
-          data: scanResult,
-          content: pdfContent
-        });
-      } else if (format === 'docx') {
-        // Generate Word document content
-        const docxContent = generateReportContent(scanResult, 'docx');
-        res.json({
-          message: "Word document generated successfully", 
-          data: scanResult,
-          content: docxContent
-        });
+        const pdfBuffer = await generatePDFReport(scanResult, scanId);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.pdf"`);
+        res.send(pdfBuffer);
+      } else if (format === 'csv') {
+        const csvContent = generateCSVReport(scanResult);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.csv"`);
+        res.send(csvContent);
+      } else {
+        res.status(400).json({ message: "Unsupported export format" });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -422,4 +418,241 @@ function countHTMLElements(html: string): number {
   const elementRegex = /<[^\/][^>]*>/g;
   const elements = html.match(elementRegex) || [];
   return elements.length;
+}
+
+async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffer> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+  
+  try {
+    const page = await browser.newPage();
+    
+    const violations = scanResult.violations || [];
+    const totalViolations = violations.length;
+    
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Accessibility Report</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                margin: 40px; 
+                line-height: 1.6;
+                color: #333;
+            }
+            .header { 
+                border-bottom: 2px solid #e74c3c; 
+                padding-bottom: 20px; 
+                margin-bottom: 30px;
+            }
+            .title { 
+                color: #e74c3c; 
+                font-size: 28px; 
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .subtitle { 
+                color: #666; 
+                font-size: 16px;
+                margin-bottom: 5px;
+            }
+            .summary { 
+                background: #f8f9fa; 
+                padding: 20px; 
+                border-left: 4px solid #3498db;
+                margin-bottom: 30px;
+            }
+            .summary h2 { 
+                color: #2c3e50; 
+                margin-top: 0;
+            }
+            .stat-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                margin-top: 15px;
+            }
+            .stat-item {
+                background: white;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+            }
+            .stat-label {
+                font-weight: bold;
+                color: #555;
+                font-size: 14px;
+            }
+            .stat-value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #e74c3c;
+                margin-top: 5px;
+            }
+            .violations { 
+                margin-top: 30px;
+            }
+            .violations h2 { 
+                color: #2c3e50; 
+                border-bottom: 1px solid #bdc3c7;
+                padding-bottom: 10px;
+            }
+            .violation { 
+                background: #fff; 
+                border: 1px solid #ddd; 
+                border-radius: 5px;
+                padding: 20px; 
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+            .violation-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 15px;
+            }
+            .violation-title { 
+                font-weight: bold; 
+                color: #2c3e50;
+                font-size: 18px;
+                flex: 1;
+            }
+            .impact { 
+                padding: 4px 12px; 
+                border-radius: 20px; 
+                font-size: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+                margin-left: 15px;
+            }
+            .impact.critical { background: #e74c3c; color: white; }
+            .impact.serious { background: #f39c12; color: white; }
+            .impact.moderate { background: #f1c40f; color: #333; }
+            .impact.minor { background: #95a5a6; color: white; }
+            .violation-help { 
+                color: #666; 
+                margin-bottom: 15px;
+                font-style: italic;
+            }
+            .violation-tags {
+                margin-bottom: 15px;
+            }
+            .tag {
+                background: #ecf0f1;
+                color: #555;
+                padding: 3px 8px;
+                border-radius: 3px;
+                font-size: 11px;
+                margin-right: 5px;
+                display: inline-block;
+            }
+            .nodes-count {
+                color: #7f8c8d;
+                font-size: 14px;
+                margin-top: 10px;
+            }
+            .footer {
+                margin-top: 50px;
+                padding-top: 20px;
+                border-top: 1px solid #bdc3c7;
+                text-align: center;
+                color: #7f8c8d;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="title">Web Accessibility Report</div>
+            <div class="subtitle">URL: ${scanResult.url}</div>
+            <div class="subtitle">Scan Date: ${new Date(scanResult.scanDate).toLocaleDateString()}</div>
+            <div class="subtitle">WCAG Level: ${scanResult.wcagLevel}</div>
+        </div>
+
+        <div class="summary">
+            <h2>Summary</h2>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Violations</div>
+                    <div class="stat-value">${totalViolations}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Passed Tests</div>
+                    <div class="stat-value" style="color: #27ae60;">${scanResult.passedTests || 0}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Elements Scanned</div>
+                    <div class="stat-value" style="color: #3498db;">${scanResult.elementsScanned || 0}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Compliance Score</div>
+                    <div class="stat-value" style="color: #9b59b6;">${scanResult.complianceScore || 0}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="violations">
+            <h2>Accessibility Violations (${totalViolations})</h2>
+            ${violations.map((violation: any, index: number) => `
+                <div class="violation">
+                    <div class="violation-header">
+                        <div class="violation-title">${index + 1}. ${violation.description}</div>
+                        <span class="impact ${violation.impact}">${violation.impact}</span>
+                    </div>
+                    <div class="violation-help">${violation.help}</div>
+                    <div class="violation-tags">
+                        ${violation.tags.map((tag: string) => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="nodes-count">Affected elements: ${violation.nodes.length}</div>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="footer">
+            <p>Generated by Web Accessibility Analyzer • Report ID: ${scanId}</p>
+        </div>
+    </body>
+    </html>
+    `;
+    
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      margin: {
+        top: '20mm',
+        right: '15mm',
+        bottom: '20mm',
+        left: '15mm'
+      },
+      printBackground: true
+    });
+    
+    return pdfBuffer;
+  } finally {
+    await browser.close();
+  }
+}
+
+function generateCSVReport(scanResult: any): string {
+  const violations = scanResult.violations || [];
+  
+  // CSV header
+  let csv = 'Violation ID,Description,Impact,Help,WCAG Tags,Affected Elements,Help URL\n';
+  
+  // Add violations data
+  violations.forEach((violation: any) => {
+    const description = violation.description.replace(/"/g, '""');
+    const help = violation.help.replace(/"/g, '""');
+    const tags = violation.tags.join('; ');
+    const helpUrl = violation.helpUrl || '';
+    
+    csv += `"${violation.id}","${description}","${violation.impact}","${help}","${tags}",${violation.nodes.length},"${helpUrl}"\n`;
+  });
+  
+  return csv;
 }
