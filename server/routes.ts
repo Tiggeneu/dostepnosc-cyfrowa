@@ -1447,14 +1447,18 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
 
   // Function to determine status based on violations
   const getStatusForCriteria = (criteriaId: string) => {
-    // Map WCAG criteria to common violation types
+    if (!scanResult.violations || scanResult.violations.length === 0) {
+      return "Spełnione";
+    }
+
+    // Map WCAG criteria to common violation types found in our system
     const criteriaMap: { [key: string]: string[] } = {
       '1.1.1': ['image-alt', 'input-image-alt', 'area-alt', 'object-alt'],
-      '1.3.1': ['label', 'form-field-multiple-labels', 'heading-order'],
+      '1.3.1': ['label', 'form-field-multiple-labels', 'heading-order', 'landmark-one-main', 'page-has-heading-one'],
       '1.4.3': ['color-contrast'],
       '1.4.4': ['meta-viewport'],
-      '2.1.1': ['keyboard'],
-      '2.1.2': ['focus-order-semantics'],
+      '2.1.1': ['keyboard', 'focusable-element'],
+      '2.1.2': ['focus-order-semantics', 'focus-visible'],
       '2.4.1': ['bypass', 'skip-link'],
       '2.4.2': ['document-title'],
       '2.4.3': ['tabindex'],
@@ -1463,21 +1467,33 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
       '2.4.7': ['focus-order-semantics'],
       '3.1.1': ['html-has-lang'],
       '3.2.2': ['select-name'],
-      '4.1.1': ['duplicate-id'],
-      '4.1.2': ['button-name', 'input-button-name', 'aria-roles']
+      '4.1.1': ['duplicate-id', 'html-has-doctype'],
+      '4.1.2': ['button-name', 'input-button-name', 'aria-valid-attr']
     };
 
-    // Check if any violation matches this criteria
+    // Check if any violation matches this criteria by ID
     const relatedViolationTypes = criteriaMap[criteriaId] || [];
-    const hasDirectViolation = scanResult.violations?.some((v: any) => 
+    const hasDirectViolation = scanResult.violations.some((v: any) => 
       relatedViolationTypes.includes(v.id)
     );
 
-    // Also check by WCAG tags
-    const hasTagViolation = scanResult.violations?.some((v: any) => 
+    // Also check by WCAG tags in violation data
+    const hasTagViolation = scanResult.violations.some((v: any) => 
       v.tags?.some((tag: string) => {
         const wcagPattern = criteriaId.replace(/\./g, '');
-        return tag.includes(`wcag${wcagPattern}`) || tag.includes(`wcag2a${wcagPattern}`) || tag.includes(`wcag2aa${wcagPattern}`);
+        return tag.includes(`wcag${wcagPattern}`) || 
+               tag.includes(`wcag2a${wcagPattern}`) || 
+               tag.includes(`wcag2aa${wcagPattern}`) ||
+               tag.includes(`wcag111`) && criteriaId === '1.1.1' ||
+               tag.includes(`wcag131`) && criteriaId === '1.3.1' ||
+               tag.includes(`wcag143`) && criteriaId === '1.4.3' ||
+               tag.includes(`wcag211`) && criteriaId === '2.1.1' ||
+               tag.includes(`wcag241`) && criteriaId === '2.4.1' ||
+               tag.includes(`wcag242`) && criteriaId === '2.4.2' ||
+               tag.includes(`wcag244`) && criteriaId === '2.4.4' ||
+               tag.includes(`wcag311`) && criteriaId === '3.1.1' ||
+               tag.includes(`wcag332`) && criteriaId === '3.3.2' ||
+               tag.includes(`wcag412`) && criteriaId === '4.1.2';
       })
     );
 
@@ -1512,7 +1528,8 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
             text: category.category,
             bold: true,
             size: 22,
-            color: "1e40af"
+            color: "1e40af",
+            font: "Calibri"
           }),
         ],
         heading: HeadingLevel.HEADING_3,
