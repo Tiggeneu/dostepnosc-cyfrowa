@@ -1353,6 +1353,340 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
 
   children.push(summaryTable);
 
+  // Wszystkie wyniki - Lista sprawdzająca WCAG 2.1
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Wszystkie wyniki",
+          bold: true,
+          size: 24,
+          color: "1e40af"
+        }),
+      ],
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 400, after: 200 }
+    })
+  );
+
+  // WCAG criteria data structure
+  const wcagCriteria = [
+    {
+      category: "1 Postrzegalność",
+      subcategories: [
+        {
+          name: "1.1 Alternatywa tekstowa",
+          criteria: [
+            { id: "1.1.1", name: "Treść nietekstowa" }
+          ]
+        },
+        {
+          name: "1.2 Multimedia",
+          criteria: [
+            { id: "1.2.1", name: "Tylko audio lub tylko wideo (nagranie)" },
+            { id: "1.2.2", name: "Napisy rozszerzone (nagranie)" },
+            { id: "1.2.3", name: "Audiodeskrypcja lub alternatywa tekstowa dla mediów (nagranie)" },
+            { id: "1.2.4", name: "Napisy rozszerzone (na żywo)" },
+            { id: "1.2.5", name: "Audiodeskrypcja (nagranie)" }
+          ]
+        },
+        {
+          name: "1.3 Możliwość adaptacji",
+          criteria: [
+            { id: "1.3.1", name: "Informacje i relacje" },
+            { id: "1.3.2", name: "Zrozumiała kolejność" },
+            { id: "1.3.3", name: "Właściwości zmysłowe" },
+            { id: "1.3.4", name: "Orientacja" },
+            { id: "1.3.5", name: "Określenie pożądanej wartości" }
+          ]
+        },
+        {
+          name: "1.4 Rozróżnialność",
+          criteria: [
+            { id: "1.4.1", name: "Użycie koloru" },
+            { id: "1.4.2", name: "Kontrola odtwarzania dźwięku" },
+            { id: "1.4.3", name: "Kontrast (minimalny)" },
+            { id: "1.4.4", name: "Zmiana rozmiaru tekstu" },
+            { id: "1.4.5", name: "Obrazy tekstu" },
+            { id: "1.4.10", name: "Dopasowanie do ekranu" },
+            { id: "1.4.11", name: "Kontrast elementów nietekstowych" },
+            { id: "1.4.12", name: "Odstępy w tekście" },
+            { id: "1.4.13", name: "Treść spod kursora lub fokusu" }
+          ]
+        }
+      ]
+    },
+    {
+      category: "2 Funkcjonalność",
+      subcategories: [
+        {
+          name: "2.1 Dostępność z klawiatury",
+          criteria: [
+            { id: "2.1.1", name: "Klawiatura" },
+            { id: "2.1.2", name: "Bez pułapki na klawiaturę" },
+            { id: "2.1.4", name: "Jednoznakowe skróty klawiaturowe" }
+          ]
+        },
+        {
+          name: "2.2 Wystarczający czas",
+          criteria: [
+            { id: "2.2.1", name: "Dostosowanie czasu" },
+            { id: "2.2.2", name: "Pauza, zatrzymanie, ukrycie" }
+          ]
+        },
+        {
+          name: "2.3 Ataki padaczki",
+          criteria: [
+            { id: "2.3.1", name: "Trzy błyski lub wartości poniżej progu" }
+          ]
+        },
+        {
+          name: "2.4 Możliwość nawigacji",
+          criteria: [
+            { id: "2.4.1", name: "Możliwość pominięcia bloków" },
+            { id: "2.4.2", name: "Tytuły stron" },
+            { id: "2.4.3", name: "Kolejność fokusu" },
+            { id: "2.4.4", name: "Cel łącza (w kontekście)" },
+            { id: "2.4.5", name: "Wiele dróg" },
+            { id: "2.4.6", name: "Nagłówki i etykiety" },
+            { id: "2.4.7", name: "Widoczny fokus" }
+          ]
+        },
+        {
+          name: "2.5 Metody obsługi",
+          criteria: [
+            { id: "2.5.1", name: "Gesty dotykowe" },
+            { id: "2.5.2", name: "Rezygnacja ze wskazania" },
+            { id: "2.5.3", name: "Etykieta w nazwie" },
+            { id: "2.5.4", name: "Aktywowanie ruchem" }
+          ]
+        }
+      ]
+    },
+    {
+      category: "3 Zrozumiałość",
+      subcategories: [
+        {
+          name: "3.1 Możliwość odczytania",
+          criteria: [
+            { id: "3.1.1", name: "Język strony" },
+            { id: "3.1.2", name: "Język części" }
+          ]
+        },
+        {
+          name: "3.2 Przewidywalność",
+          criteria: [
+            { id: "3.2.1", name: "Po otrzymaniu fokusu" },
+            { id: "3.2.2", name: "Podczas wprowadzania danych" },
+            { id: "3.2.3", name: "Spójna nawigacja" },
+            { id: "3.2.4", name: "Spójna identyfikacja" }
+          ]
+        },
+        {
+          name: "3.3 Pomoc przy wprowadzaniu informacji",
+          criteria: [
+            { id: "3.3.1", name: "Identyfikacja błędu" },
+            { id: "3.3.2", name: "Etykiety lub instrukcje" },
+            { id: "3.3.3", name: "Sugestie korekty błędów" },
+            { id: "3.3.4", name: "Zapobieganie błędom (prawnym, finansowym, w danych)" }
+          ]
+        }
+      ]
+    },
+    {
+      category: "4 Solidność",
+      subcategories: [
+        {
+          name: "4.1 Kompatybilność",
+          criteria: [
+            { id: "4.1.1", name: "Poprawność kodu" },
+            { id: "4.1.2", name: "Nazwa, rola, wartość" },
+            { id: "4.1.3", name: "Komunikaty o stanie" }
+          ]
+        }
+      ]
+    }
+  ];
+
+  // Function to determine status based on violations
+  const getStatusForCriteria = (criteriaId: string) => {
+    const hasViolation = scanResult.violations?.some((v: any) => 
+      v.tags?.some((tag: string) => tag.includes(criteriaId.replace('.', '')))
+    );
+    return hasViolation ? "Niespełnione" : "Spełnione";
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Spełnione": return "16a34a";
+      case "Niespełnione": return "dc2626";
+      case "Nietestowane": return "6b7280";
+      default: return "d97706";
+    }
+  };
+
+  const getStatusBg = (status: string) => {
+    switch (status) {
+      case "Spełnione": return "f0fdf4";
+      case "Niespełnione": return "fef2f2";
+      case "Nietestowane": return "f9fafb";
+      default: return "fffbeb";
+    }
+  };
+
+  // Generate WCAG checklist table
+  wcagCriteria.forEach((category) => {
+    // Category header
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: category.category,
+            bold: true,
+            size: 22,
+            color: "1e40af"
+          }),
+        ],
+        heading: HeadingLevel.HEADING_3,
+        spacing: { before: 300, after: 150 }
+      })
+    );
+
+    category.subcategories.forEach((subcategory) => {
+      // Subcategory header
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: subcategory.name,
+              bold: true,
+              size: 20,
+              color: "374151"
+            }),
+          ],
+          spacing: { before: 200, after: 100 }
+        })
+      );
+
+      // Create table for criteria
+      const criteriaRows = subcategory.criteria.map(criterion => {
+        const status = getStatusForCriteria(criterion.id);
+        const statusColor = getStatusColor(status);
+        const statusBg = getStatusBg(status);
+
+        return new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: `${criterion.id}: `, bold: true, size: 18 }),
+                    new TextRun({ text: criterion.name, size: 18 })
+                  ],
+                  spacing: { before: 100, after: 100 }
+                })
+              ],
+              width: { size: 60, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 150, right: 150 }
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ 
+                      text: status, 
+                      bold: true, 
+                      size: 18, 
+                      color: statusColor 
+                    })
+                  ],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 100, after: 100 }
+                })
+              ],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: statusBg },
+              margins: { top: 100, bottom: 100, left: 150, right: 150 }
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ 
+                      text: status === "Niespełnione" ? "Wymaga uwagi" : "Brak uwag", 
+                      size: 16, 
+                      italics: true 
+                    })
+                  ],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 100, after: 100 }
+                })
+              ],
+              width: { size: 15, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 150, right: 150 }
+            }),
+          ],
+        });
+      });
+
+      const criteriaTable = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: BorderStyle.SINGLE, size: 1, color: "d1d5db" },
+          bottom: { style: BorderStyle.SINGLE, size: 1, color: "d1d5db" },
+          left: { style: BorderStyle.SINGLE, size: 1, color: "d1d5db" },
+          right: { style: BorderStyle.SINGLE, size: 1, color: "d1d5db" },
+          insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+          insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+        },
+        rows: [
+          // Header row
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [new TextRun({ text: "Kryterium sukcesu", bold: true, size: 18, color: "1e40af" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 150, after: 150 }
+                  })
+                ],
+                shading: { fill: "f8fafc" },
+                margins: { top: 150, bottom: 150, left: 150, right: 150 }
+              }),
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [new TextRun({ text: "Wynik", bold: true, size: 18, color: "1e40af" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 150, after: 150 }
+                  })
+                ],
+                shading: { fill: "f8fafc" },
+                margins: { top: 150, bottom: 150, left: 150, right: 150 }
+              }),
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [new TextRun({ text: "Obserwacje", bold: true, size: 18, color: "1e40af" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 150, after: 150 }
+                  })
+                ],
+                shading: { fill: "f8fafc" },
+                margins: { top: 150, bottom: 150, left: 150, right: 150 }
+              }),
+            ],
+          }),
+          ...criteriaRows
+        ],
+      });
+
+      children.push(criteriaTable);
+      children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
+    });
+  });
+
   // Violations section
   if (totalViolations > 0) {
     children.push(
@@ -1366,7 +1700,7 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
           }),
         ],
         heading: HeadingLevel.HEADING_1,
-        spacing: { before: 400, after: 200 }
+        spacing: { before: 600, after: 200 }
       })
     );
 
