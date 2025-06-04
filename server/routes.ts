@@ -632,7 +632,7 @@ async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffe
       printBackground: true
     });
     
-    return pdfBuffer;
+    return Buffer.from(pdfBuffer);
   } finally {
     await browser.close();
   }

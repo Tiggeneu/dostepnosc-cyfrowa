@@ -18,23 +18,43 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
   }) as any;
 
   const exportMutation = useMutation({
-    mutationFn: async (format: 'pdf' | 'json' | 'docx') => {
+    mutationFn: async (format: 'pdf' | 'json' | 'csv') => {
       const response = await apiRequest("POST", "/api/export", { scanId, format });
-      return await response.json();
+      
+      if (format === 'pdf') {
+        return await response.blob();
+      } else if (format === 'csv') {
+        return await response.text();
+      } else {
+        return await response.json();
+      }
     },
     onSuccess: (data, format) => {
+      let blob: Blob;
+      let filename: string;
+      
       if (format === 'json') {
-        // Download JSON file
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `accessibility-report-${scanId}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        filename = `accessibility-report-${scanId}.json`;
+      } else if (format === 'pdf') {
+        blob = data as Blob;
+        filename = `accessibility-report-${scanId}.pdf`;
+      } else if (format === 'csv') {
+        blob = new Blob([data as string], { type: 'text/csv' });
+        filename = `accessibility-report-${scanId}.csv`;
+      } else {
+        return;
       }
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
       toast({
         title: "Export Successful",
         description: `Report exported as ${format.toUpperCase()}`,
@@ -79,11 +99,11 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => exportMutation.mutate('docx')}
+            onClick={() => exportMutation.mutate('csv')}
             disabled={exportMutation.isPending}
           >
             <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Export Word
+            Export CSV
           </Button>
           <Button
             variant="outline"

@@ -55,5 +55,5 @@ export interface ScanResponse {
 
 export interface ReportExportRequest {
   scanId: number;
-  format: 'pdf' | 'json' | 'docx';
+  format: 'pdf' | 'json' | 'csv';
 }
