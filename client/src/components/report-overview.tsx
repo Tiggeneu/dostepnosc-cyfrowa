@@ -18,12 +18,14 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
   });
 
   const exportMutation = useMutation({
-    mutationFn: async (format: 'pdf' | 'json' | 'csv') => {
+    mutationFn: async (format: 'pdf' | 'json' | 'csv' | 'docx') => {
       const response = await apiRequest("POST", "/api/export", { scanId, format });
       
       if (format === 'pdf') {
         return await response.blob();
       } else if (format === 'csv') {
+        return await response.text();
+      } else if (format === 'docx') {
         return await response.text();
       } else {
         return await response.json();
@@ -35,13 +37,16 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
       
       if (format === 'json') {
         blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        filename = `accessibility-report-${scanId}.json`;
+        filename = `raport-dostepnosci-${scanId}.json`;
       } else if (format === 'pdf') {
         blob = data as Blob;
-        filename = `accessibility-report-${scanId}.pdf`;
+        filename = `raport-dostepnosci-${scanId}.html`;
       } else if (format === 'csv') {
         blob = new Blob([data as string], { type: 'text/csv' });
-        filename = `accessibility-report-${scanId}.csv`;
+        filename = `raport-dostepnosci-${scanId}.csv`;
+      } else if (format === 'docx') {
+        blob = new Blob([data as string], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        filename = `raport-dostepnosci-${scanId}.docx`;
       } else {
         return;
       }
