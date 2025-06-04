@@ -22,11 +22,11 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
       const response = await apiRequest("POST", "/api/export", { scanId, format });
       
       if (format === 'pdf') {
-        return await response.blob();
+        return await response.text(); // HTML content for PDF
       } else if (format === 'csv') {
         return await response.text();
       } else if (format === 'docx') {
-        return await response.text();
+        return await response.text(); // HTML content for Word
       } else {
         return await response.json();
       }
@@ -39,14 +39,14 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
         blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         filename = `raport-dostepnosci-${scanId}.json`;
       } else if (format === 'pdf') {
-        blob = data as Blob;
+        blob = new Blob([data as string], { type: 'text/html' });
         filename = `raport-dostepnosci-${scanId}.html`;
       } else if (format === 'csv') {
         blob = new Blob([data as string], { type: 'text/csv' });
         filename = `raport-dostepnosci-${scanId}.csv`;
       } else if (format === 'docx') {
-        blob = new Blob([data as string], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-        filename = `raport-dostepnosci-${scanId}.docx`;
+        blob = new Blob([data as string], { type: 'text/html' });
+        filename = `raport-dostepnosci-${scanId}.html`;
       } else {
         return;
       }
@@ -116,7 +116,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             onClick={() => exportMutation.mutate('docx')}
             disabled={exportMutation.isPending}
           >
-            <FileText className="w-4 h-4 mr-2" />
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
             Eksportuj Word
           </Button>
           <Button
