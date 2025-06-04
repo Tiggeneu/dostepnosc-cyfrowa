@@ -15,8 +15,8 @@ export default function Home() {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-4 text-white">Web Accessibility Analyzer</h1>
-          <p className="text-xl mb-0 text-blue-100">Comprehensive WCAG 2.1 compliance scanning powered by axe-core and Puppeteer</p>
+          <h1 className="text-5xl font-bold mb-4 text-white">Analizator Dostępności Web</h1>
+          <p className="text-xl mb-0 text-blue-100">Kompleksowe skanowanie zgodności z WCAG 2.1 napędzane przez axe-core i Puppeteer</p>
         </div>
       </section>
 

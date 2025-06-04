@@ -80,10 +80,10 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
     <div className="report-section">
       <div className="flex flex-col md:flex-row justify-between items-start mb-6">
         <div>
-          <h2 className="text-2xl font-bold mb-1">Accessibility Report</h2>
+          <h2 className="text-2xl font-bold mb-1">Raport Dostępności</h2>
           <p className="text-gray-600">
-            Scanned: <span className="font-medium">{scanResult.url}</span> • 
-            <span className="ml-1">{new Date(scanResult.scanDate).toLocaleString()}</span>
+            Przeskanowano: <span className="font-medium">{scanResult.url}</span> • 
+            <span className="ml-1">{new Date(scanResult.scanDate).toLocaleString('pl-PL')}</span>
           </p>
         </div>
         <div className="flex gap-2 mt-4 md:mt-0">
@@ -94,7 +94,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             disabled={exportMutation.isPending}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Export PDF
+            Eksportuj PDF
           </Button>
           <Button
             variant="outline"
@@ -103,7 +103,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             disabled={exportMutation.isPending}
           >
             <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Export CSV
+            Eksportuj CSV
           </Button>
           <Button
             variant="outline"
@@ -112,7 +112,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             disabled={exportMutation.isPending}
           >
             <Code className="w-4 h-4 mr-2" />
-            Export JSON
+            Eksportuj JSON
           </Button>
         </div>
       </div>

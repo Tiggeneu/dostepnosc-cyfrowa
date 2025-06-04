@@ -97,21 +97,21 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
         <div className="grid md:grid-cols-5 gap-4 items-end">
           <div className="md:col-span-3">
             <Label htmlFor="urlInput" className="text-sm font-semibold">
-              Website URL
+              URL strony internetowej
             </Label>
             <Input
               id="urlInput"
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com"
+              placeholder="https://przykład.pl"
               className="url-input mt-1"
               disabled={isScanning}
             />
           </div>
           <div>
             <Label htmlFor="wcagLevel" className="text-sm font-semibold flex items-center">
-              WCAG Level
+              Poziom WCAG
               <Info className="w-3 h-3 ml-1 text-gray-400" />
             </Label>
             <Select value={wcagLevel} onValueChange={(value: 'A' | 'AA' | 'AAA') => setWcagLevel(value)} disabled={isScanning}>
@@ -119,9 +119,9 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="A">Level A (Basic)</SelectItem>
-                <SelectItem value="AA">Level AA (Standard)</SelectItem>
-                <SelectItem value="AAA">Level AAA (Enhanced)</SelectItem>
+                <SelectItem value="A">Poziom A (Podstawowy)</SelectItem>
+                <SelectItem value="AA">Poziom AA (Standardowy)</SelectItem>
+                <SelectItem value="AAA">Poziom AAA (Zaawansowany)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -134,12 +134,12 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
               {isScanning ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Scanning...
+                  Skanowanie...
                 </>
               ) : (
                 <>
                   <Search className="w-4 h-4 mr-2" />
-                  Analyze Website
+                  Analizuj stronę
                 </>
               )}
             </Button>
