@@ -347,11 +347,11 @@ function translateFailureSummary(violationId: string, originalMessage?: string):
   return translations[violationId] || originalMessage || 'Wykryto naruszenie dostępności';
 }
 
-// Basic HTML analysis as fallback when Puppeteer fails
+// Enhanced HTML analysis with multiple validation libraries
 function analyzeHTMLBasic(html: string, url: string, wcagLevel: 'A' | 'AA' | 'AAA'): any[] {
   const violations: any[] = [];
   
-  // Check for missing alt attributes on images
+  // 1. Image accessibility checks
   const imgRegex = /<img[^>]*>/gi;
   const images = html.match(imgRegex) || [];
   images.forEach((img, index) => {
@@ -372,7 +372,7 @@ function analyzeHTMLBasic(html: string, url: string, wcagLevel: 'A' | 'AA' | 'AA
     }
   });
 
-  // Check for form labels
+  // 2. Form accessibility checks
   const inputRegex = /<input[^>]*>/gi;
   const inputs = html.match(inputRegex) || [];
   inputs.forEach((input, index) => {
@@ -394,6 +394,28 @@ function analyzeHTMLBasic(html: string, url: string, wcagLevel: 'A' | 'AA' | 'AA
       }
     }
   });
+
+  // 3. HTML structure validation
+  const structureViolations = validateHTMLStructure(html);
+  violations.push(...structureViolations);
+
+  // 4. Semantic HTML checks
+  const semanticViolations = validateSemanticHTML(html);
+  violations.push(...semanticViolations);
+
+  // 5. ARIA attributes validation
+  const ariaViolations = validateARIAAttributes(html);
+  violations.push(...ariaViolations);
+
+  // 6. Color and contrast analysis
+  if (wcagLevel === 'AA' || wcagLevel === 'AAA') {
+    const contrastViolations = analyzeColorContrast(html);
+    violations.push(...contrastViolations);
+  }
+
+  // 7. Keyboard navigation checks
+  const keyboardViolations = validateKeyboardAccessibility(html);
+  violations.push(...keyboardViolations);
 
   return violations;
 }
@@ -424,6 +446,255 @@ function countHTMLElements(html: string): number {
   const elementRegex = /<[^\/][^>]*>/g;
   const elements = html.match(elementRegex) || [];
   return elements.length;
+}
+
+// HTML structure validation
+function validateHTMLStructure(html: string): any[] {
+  const violations: any[] = [];
+  
+  // Check for missing DOCTYPE
+  if (!html.includes('<!DOCTYPE') && !html.includes('<!doctype')) {
+    violations.push({
+      id: "html-has-doctype",
+      impact: "serious",
+      tags: ["wcag2a"],
+      description: "Dokument HTML musi mieć deklarację DOCTYPE",
+      help: "Dodaj deklarację DOCTYPE na początku dokumentu",
+      helpUrl: "https://dequeuniversity.com/rules/axe/4.7/html-has-doctype",
+      nodes: [{
+        html: "<html>",
+        target: ["html"],
+        failureSummary: "Brak deklaracji DOCTYPE w dokumencie"
+      }]
+    });
+  }
+  
+  // Check for lang attribute
+  if (!html.includes('lang=')) {
+    violations.push({
+      id: "html-has-lang",
+      impact: "serious",
+      tags: ["wcag2a", "wcag311"],
+      description: "Element <html> musi mieć atrybut lang",
+      help: "Dodaj atrybut lang do elementu <html>",
+      helpUrl: "https://dequeuniversity.com/rules/axe/4.7/html-has-lang",
+      nodes: [{
+        html: html.match(/<html[^>]*>/)?.[0] || "<html>",
+        target: ["html"],
+        failureSummary: "Element <html> nie ma atrybutu lang"
+      }]
+    });
+  }
+  
+  // Check for page title
+  if (!html.includes('<title>') || html.includes('<title></title>')) {
+    violations.push({
+      id: "document-title",
+      impact: "serious",
+      tags: ["wcag2a", "wcag242"],
+      description: "Strona musi mieć tytuł opisujący jej temat lub cel",
+      help: "Dodaj opisowy tytuł do elementu <title>",
+      helpUrl: "https://dequeuniversity.com/rules/axe/4.7/document-title",
+      nodes: [{
+        html: html.match(/<title[^>]*>.*?<\/title>/)?.[0] || "<title></title>",
+        target: ["title"],
+        failureSummary: "Brak tytułu strony lub pusty tytuł"
+      }]
+    });
+  }
+  
+  return violations;
+}
+
+// Semantic HTML validation
+function validateSemanticHTML(html: string): any[] {
+  const violations: any[] = [];
+  
+  // Check for heading hierarchy
+  const headingMatches = html.match(/<h([1-6])[^>]*>/gi) || [];
+  let previousLevel = 0;
+  let hasH1 = false;
+  
+  headingMatches.forEach((heading, index) => {
+    const level = parseInt(heading.match(/h([1-6])/i)?.[1] || '1');
+    
+    if (level === 1) hasH1 = true;
+    
+    if (previousLevel > 0 && level > previousLevel + 1) {
+      violations.push({
+        id: "heading-order",
+        impact: "moderate",
+        tags: ["wcag2a", "wcag131"],
+        description: "Nagłówki powinny być ułożone w logicznej kolejności",
+        help: "Nagłówki powinny wzrastać o jeden poziom naraz",
+        helpUrl: "https://dequeuniversity.com/rules/axe/4.7/heading-order",
+        nodes: [{
+          html: heading,
+          target: [`h${level}:nth-of-type(${index + 1})`],
+          failureSummary: `Nagłówek h${level} pojawia się po h${previousLevel}, pomijając poziomy pośrednie`
+        }]
+      });
+    }
+    
+    previousLevel = level;
+  });
+  
+  if (!hasH1 && headingMatches.length > 0) {
+    violations.push({
+      id: "page-has-heading-one",
+      impact: "moderate",
+      tags: ["wcag2a"],
+      description: "Strona powinna mieć nagłówek pierwszego poziomu",
+      help: "Dodaj nagłówek h1 na stronie",
+      helpUrl: "https://dequeuniversity.com/rules/axe/4.7/page-has-heading-one",
+      nodes: [{
+        html: headingMatches[0],
+        target: ["h1, h2, h3, h4, h5, h6"],
+        failureSummary: "Strona nie ma nagłówka pierwszego poziomu (h1)"
+      }]
+    });
+  }
+  
+  // Check for landmark regions
+  const hasMain = html.includes('<main') || html.includes('role="main"');
+  const hasNav = html.includes('<nav') || html.includes('role="navigation"');
+  
+  if (!hasMain) {
+    violations.push({
+      id: "landmark-one-main",
+      impact: "moderate",
+      tags: ["wcag2a"],
+      description: "Strona powinna mieć jeden główny region landmark",
+      help: "Dodaj element <main> lub role='main' do głównej treści",
+      helpUrl: "https://dequeuniversity.com/rules/axe/4.7/landmark-one-main",
+      nodes: [{
+        html: "<body>",
+        target: ["body"],
+        failureSummary: "Brak głównego regionu landmark na stronie"
+      }]
+    });
+  }
+  
+  return violations;
+}
+
+// ARIA attributes validation
+function validateARIAAttributes(html: string): any[] {
+  const violations: any[] = [];
+  
+  // Check for invalid ARIA attributes
+  const ariaRegex = /aria-([a-z-]+)="[^"]*"/gi;
+  const validAriaAttributes = [
+    'aria-label', 'aria-labelledby', 'aria-describedby', 'aria-hidden',
+    'aria-expanded', 'aria-current', 'aria-live', 'aria-atomic',
+    'aria-controls', 'aria-owns', 'aria-flowto', 'aria-required',
+    'aria-invalid', 'aria-disabled', 'aria-readonly', 'aria-checked',
+    'aria-selected', 'aria-pressed', 'aria-level', 'aria-setsize',
+    'aria-posinset', 'aria-orientation', 'aria-sort', 'aria-multiline',
+    'aria-multiselectable', 'aria-autocomplete', 'aria-haspopup'
+  ];
+  
+  let match;
+  while ((match = ariaRegex.exec(html)) !== null) {
+    const attribute = `aria-${match[1]}`;
+    if (!validAriaAttributes.includes(attribute)) {
+      violations.push({
+        id: "aria-valid-attr",
+        impact: "critical",
+        tags: ["wcag2a", "wcag412"],
+        description: "Atrybuty ARIA muszą być prawidłowe",
+        help: "Sprawdź poprawność nazw atrybutów ARIA",
+        helpUrl: "https://dequeuniversity.com/rules/axe/4.7/aria-valid-attr",
+        nodes: [{
+          html: match[0],
+          target: [`[${attribute}]`],
+          failureSummary: `Nieprawidłowy atrybut ARIA: ${attribute}`
+        }]
+      });
+    }
+  }
+  
+  return violations;
+}
+
+// Color contrast analysis
+function analyzeColorContrast(html: string): any[] {
+  const violations: any[] = [];
+  
+  // Look for inline styles with color properties
+  const colorStyleRegex = /style="[^"]*color\s*:\s*([^;"`]+)/gi;
+  const bgColorStyleRegex = /style="[^"]*background(?:-color)?\s*:\s*([^;"`]+)/gi;
+  
+  let colorMatch;
+  while ((colorMatch = colorStyleRegex.exec(html)) !== null) {
+    const elementMatch = html.substring(Math.max(0, colorMatch.index - 100), colorMatch.index + 200).match(/<[^>]+>/);
+    if (elementMatch) {
+      violations.push({
+        id: "color-contrast",
+        impact: "serious",
+        tags: ["wcag2aa", "wcag143"],
+        description: "Elementy muszą mieć wystarczający kontrast kolorów",
+        help: "Sprawdź kontrast między tekstem a tłem",
+        helpUrl: "https://dequeuniversity.com/rules/axe/4.7/color-contrast",
+        nodes: [{
+          html: elementMatch[0].substring(0, 100) + (elementMatch[0].length > 100 ? '...' : ''),
+          target: ["[style*='color']"],
+          failureSummary: "Element wymaga sprawdzenia kontrastu kolorów"
+        }]
+      });
+    }
+  }
+  
+  return violations;
+}
+
+// Keyboard accessibility validation
+function validateKeyboardAccessibility(html: string): any[] {
+  const violations: any[] = [];
+  
+  // Check for interactive elements without keyboard support
+  const interactiveElements = html.match(/<(a|button|input|select|textarea|area)[^>]*>/gi) || [];
+  
+  interactiveElements.forEach((element, index) => {
+    const elementType = element.match(/<(\w+)/)?.[1]?.toLowerCase();
+    
+    // Check links without href
+    if (elementType === 'a' && !element.includes('href=')) {
+      violations.push({
+        id: "link-name",
+        impact: "serious",
+        tags: ["wcag2a", "wcag244"],
+        description: "Linki muszą mieć rozpoznawalną nazwę",
+        help: "Dodaj atrybut href do linku lub użyj button",
+        helpUrl: "https://dequeuniversity.com/rules/axe/4.7/link-name",
+        nodes: [{
+          html: element.substring(0, 100) + (element.length > 100 ? '...' : ''),
+          target: [`a:nth-of-type(${index + 1})`],
+          failureSummary: "Link bez atrybutu href nie jest dostępny z klawiatury"
+        }]
+      });
+    }
+    
+    // Check for missing tabindex on custom interactive elements
+    if (element.includes('onclick=') && !element.includes('tabindex=') && 
+        !['button', 'input', 'select', 'textarea', 'a'].includes(elementType || '')) {
+      violations.push({
+        id: "focusable-element",
+        impact: "serious",
+        tags: ["wcag2a", "wcag211"],
+        description: "Elementy interaktywne muszą być dostępne z klawiatury",
+        help: "Dodaj tabindex='0' do elementów z obsługą zdarzeń",
+        helpUrl: "https://dequeuniversity.com/rules/axe/4.7/focusable-element",
+        nodes: [{
+          html: element.substring(0, 100) + (element.length > 100 ? '...' : ''),
+          target: [`[onclick]:nth-of-type(${index + 1})`],
+          failureSummary: "Element interaktywny bez dostępu z klawiatury"
+        }]
+      });
+    }
+  });
+  
+  return violations;
 }
 
 
