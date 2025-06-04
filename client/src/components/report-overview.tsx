@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Download, Code } from "lucide-react";
+import { FileText, Download, Code, FileSpreadsheet } from "lucide-react";
 
 interface ReportOverviewProps {
   scanId: number;
@@ -18,7 +18,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
   });
 
   const exportMutation = useMutation({
-    mutationFn: async (format: 'pdf' | 'json') => {
+    mutationFn: async (format: 'pdf' | 'json' | 'docx') => {
       const response = await apiRequest("POST", "/api/export", { scanId, format });
       return await response.json();
     },
@@ -75,6 +75,15 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
           >
             <FileText className="w-4 h-4 mr-2" />
             Export PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportMutation.mutate('docx')}
+            disabled={exportMutation.isPending}
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Export Word
           </Button>
           <Button
             variant="outline"

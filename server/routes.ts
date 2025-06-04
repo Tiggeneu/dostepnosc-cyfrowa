@@ -83,11 +83,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.json"`);
         res.json(scanResult);
       } else if (format === 'pdf') {
-        // For PDF generation, we'll return the raw data and let the frontend handle it
-        // In a production app, you might use a library like puppeteer-pdf or jsPDF
+        // Generate PDF report content
+        const pdfContent = generateReportContent(scanResult, 'pdf');
         res.json({
-          message: "PDF export functionality would be implemented here",
-          data: scanResult
+          message: "PDF report generated successfully",
+          data: scanResult,
+          content: pdfContent
+        });
+      } else if (format === 'docx') {
+        // Generate Word document content
+        const docxContent = generateReportContent(scanResult, 'docx');
+        res.json({
+          message: "Word document generated successfully", 
+          data: scanResult,
+          content: docxContent
         });
       }
     } catch (error) {
@@ -100,6 +109,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper function to generate report content
+function generateReportContent(scanResult: any, format: 'pdf' | 'docx'): string {
+  const violations = scanResult.violations || [];
+  const date = new Date(scanResult.scanDate).toLocaleDateString();
+  
+  if (format === 'pdf') {
+    return `
+# Accessibility Report
+
+**Website:** ${scanResult.url}
+**WCAG Level:** ${scanResult.wcagLevel || 'AA'}
+**Scan Date:** ${date}
+**Compliance Score:** ${scanResult.complianceScore}%
+
+## Summary
+- Total Violations: ${violations.length}
+- Passed Tests: ${scanResult.passedTests}
+- Elements Scanned: ${scanResult.elementsScanned}
+
+## Violations
+${violations.map((v: any, i: number) => `
+### ${i + 1}. ${v.help}
+**Impact:** ${v.impact}
+**Description:** ${v.description}
+**Affected Elements:** ${v.nodes.length}
+**Help URL:** ${v.helpUrl}
+`).join('\n')}
+    `.trim();
+  } else {
+    return `
+ACCESSIBILITY REPORT
+
+Website: ${scanResult.url}
+WCAG Level: ${scanResult.wcagLevel || 'AA'}
+Scan Date: ${date}
+Compliance Score: ${scanResult.complianceScore}%
+
+SUMMARY
+Total Violations: ${violations.length}
+Passed Tests: ${scanResult.passedTests}
+Elements Scanned: ${scanResult.elementsScanned}
+
+VIOLATIONS
+${violations.map((v: any, i: number) => `
+${i + 1}. ${v.help}
+Impact: ${v.impact}
+Description: ${v.description}
+Affected Elements: ${v.nodes.length}
+Help URL: ${v.helpUrl}
+`).join('\n')}
+    `.trim();
+  }
 }
 
 // Background scan function
