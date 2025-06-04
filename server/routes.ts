@@ -1829,6 +1829,90 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
               }),
             ],
           }),
+          // Code examples row
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "💻 Przykłady problematycznego kodu:", bold: true, size: 20 }),
+                    ],
+                    spacing: { before: 100, after: 100 }
+                  }),
+                  ...(violation.nodes?.slice(0, 3).map((node: any, nodeIndex: number) => 
+                    new Paragraph({
+                      children: [
+                        new TextRun({ 
+                          text: `${nodeIndex + 1}. Element: `, 
+                          bold: true, 
+                          size: 16 
+                        }),
+                        new TextRun({ 
+                          text: node.target ? node.target.join(' > ') : 'Nieznana lokalizacja', 
+                          size: 16, 
+                          color: "6b7280" 
+                        }),
+                      ],
+                      spacing: { after: 50 }
+                    })
+                  ) || []),
+                  ...(violation.nodes?.slice(0, 3).map((node: any, nodeIndex: number) => 
+                    new Paragraph({
+                      children: [
+                        new TextRun({ 
+                          text: node.html ? node.html.replace(/\s+/g, ' ').trim() : 'Brak kodu HTML', 
+                          size: 14, 
+                          fontFamily: "Courier New",
+                          color: "374151"
+                        }),
+                      ],
+                      spacing: { after: 100 },
+                      shading: { fill: "f9fafb" },
+                      border: {
+                        top: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+                        bottom: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+                        left: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+                        right: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+                      }
+                    })
+                  ) || []),
+                  ...(violation.nodes?.slice(0, 3).map((node: any, nodeIndex: number) => 
+                    node.failureSummary ? new Paragraph({
+                      children: [
+                        new TextRun({ 
+                          text: `⚠️ Problem: `, 
+                          bold: true, 
+                          size: 16, 
+                          color: "dc2626" 
+                        }),
+                        new TextRun({ 
+                          text: node.failureSummary, 
+                          size: 16,
+                          italics: true
+                        }),
+                      ],
+                      spacing: { after: 150 }
+                    }) : new Paragraph({ text: "", spacing: { after: 50 } })
+                  ) || []),
+                  ...(violation.nodes?.length > 3 ? [
+                    new Paragraph({
+                      children: [
+                        new TextRun({ 
+                          text: `... i ${violation.nodes.length - 3} więcej podobnych elementów`, 
+                          size: 16, 
+                          italics: true,
+                          color: "6b7280"
+                        }),
+                      ],
+                      spacing: { after: 100 }
+                    })
+                  ] : [])
+                ],
+                margins: { top: 50, bottom: 50, left: 150, right: 150 }
+              }),
+            ],
+          }),
         ],
       });
 
