@@ -1510,10 +1510,41 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
 
   // Function to determine status based on violations
   const getStatusForCriteria = (criteriaId: string) => {
-    const hasViolation = scanResult.violations?.some((v: any) => 
-      v.tags?.some((tag: string) => tag.includes(criteriaId.replace('.', '')))
+    // Map WCAG criteria to common violation types
+    const criteriaMap: { [key: string]: string[] } = {
+      '1.1.1': ['image-alt', 'input-image-alt', 'area-alt', 'object-alt'],
+      '1.3.1': ['label', 'form-field-multiple-labels', 'heading-order'],
+      '1.4.3': ['color-contrast'],
+      '1.4.4': ['meta-viewport'],
+      '2.1.1': ['keyboard'],
+      '2.1.2': ['focus-order-semantics'],
+      '2.4.1': ['bypass', 'skip-link'],
+      '2.4.2': ['document-title'],
+      '2.4.3': ['tabindex'],
+      '2.4.4': ['link-name'],
+      '2.4.6': ['empty-heading'],
+      '2.4.7': ['focus-order-semantics'],
+      '3.1.1': ['html-has-lang'],
+      '3.2.2': ['select-name'],
+      '4.1.1': ['duplicate-id'],
+      '4.1.2': ['button-name', 'input-button-name', 'aria-roles']
+    };
+
+    // Check if any violation matches this criteria
+    const relatedViolationTypes = criteriaMap[criteriaId] || [];
+    const hasDirectViolation = scanResult.violations?.some((v: any) => 
+      relatedViolationTypes.includes(v.id)
     );
-    return hasViolation ? "Niespełnione" : "Spełnione";
+
+    // Also check by WCAG tags
+    const hasTagViolation = scanResult.violations?.some((v: any) => 
+      v.tags?.some((tag: string) => {
+        const wcagPattern = criteriaId.replace(/\./g, '');
+        return tag.includes(`wcag${wcagPattern}`) || tag.includes(`wcag2a${wcagPattern}`) || tag.includes(`wcag2aa${wcagPattern}`);
+      })
+    );
+
+    return (hasDirectViolation || hasTagViolation) ? "Niespełnione" : "Spełnione";
   };
 
   const getStatusColor = (status: string) => {
@@ -1863,7 +1894,6 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
                         new TextRun({ 
                           text: node.html ? node.html.replace(/\s+/g, ' ').trim() : 'Brak kodu HTML', 
                           size: 14, 
-                          fontFamily: "Courier New",
                           color: "374151"
                         }),
                       ],
