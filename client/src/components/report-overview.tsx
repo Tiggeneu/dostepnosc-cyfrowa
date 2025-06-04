@@ -108,6 +108,15 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => exportMutation.mutate('docx')}
+            disabled={exportMutation.isPending}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Eksportuj Word
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => exportMutation.mutate('json')}
             disabled={exportMutation.isPending}
           >

@@ -335,13 +335,13 @@ function analyzeHTMLContent(html: string, url: string, wcagLevel: 'A' | 'AA' | '
           id: "label",
           impact: "critical",
           tags: ["wcag2a", "wcag332"],
-          description: "Form elements must have labels",
-          help: "Ensure every form element has a label",
+          description: "Elementy formularza muszą mieć etykiety",
+          help: "Upewnij się, że każdy element formularza ma etykietę",
           helpUrl: "https://dequeuniversity.com/rules/axe/4.7/label",
           nodes: [{
             html: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
             target: [`input:nth-of-type(${index + 1})`],
-            failureSummary: "Form element does not have an associated label"
+            failureSummary: "Element formularza nie ma powiązanej etykiety"
           }]
         });
       }
@@ -358,13 +358,13 @@ function analyzeHTMLContent(html: string, url: string, wcagLevel: 'A' | 'AA' | '
         id: "color-contrast",
         impact: "serious",
         tags: ["wcag2aa", "wcag143"],
-        description: "Elements must have sufficient color contrast",
-        help: "Ensure sufficient contrast between foreground and background colors",
+        description: "Elementy muszą mieć wystarczający kontrast kolorów",
+        help: "Zapewnij wystarczający kontrast między kolorami pierwszego planu i tła",
         helpUrl: "https://dequeuniversity.com/rules/axe/4.7/color-contrast",
         nodes: [{
-          html: "<div>Text content with potential contrast issues</div>",
+          html: "<div>Treść tekstowa z potencjalnymi problemami z kontrastem</div>",
           target: ["body"],
-          failureSummary: "Potential color contrast issues detected. Manual verification recommended."
+          failureSummary: "Wykryto potencjalne problemy z kontrastem kolorów. Zalecana weryfikacja manualna."
         }]
       });
     }
@@ -378,13 +378,13 @@ function analyzeHTMLContent(html: string, url: string, wcagLevel: 'A' | 'AA' | '
         id: "focus-visible",
         impact: "serious",
         tags: ["wcag2aaa", "wcag241"],
-        description: "Elements must have visible focus indicators",
-        help: "Ensure all focusable elements have visible focus indicators",
+        description: "Elementy muszą mieć widoczne wskaźniki fokusu",
+        help: "Upewnij się, że wszystkie elementy z fokusem mają widoczne wskaźniki",
         helpUrl: "https://dequeuniversity.com/rules/axe/4.7/focus-visible",
         nodes: [{
-          html: "<button>Interactive element</button>",
+          html: "<button>Element interaktywny</button>",
           target: ["button, input, a"],
-          failureSummary: "No focus indicators detected in styles"
+          failureSummary: "Nie wykryto wskaźników fokusu w stylach"
         }]
       });
     }
@@ -771,4 +771,219 @@ function generateCSVReport(scanResult: any): string {
   });
   
   return csv;
+}
+
+function generateWordReport(scanResult: any, scanId: number): string {
+  const currentDate = new Date().toLocaleDateString('pl-PL');
+  const url = scanResult.url || 'Nieznany URL';
+  const totalViolations = scanResult.violations?.length || 0;
+  const passedTests = scanResult.passedTests || 0;
+  const elementsScanned = scanResult.elementsScanned || 0;
+  const complianceScore = scanResult.complianceScore || 0;
+
+  // Generate Word document content as HTML that can be opened by Word
+  let wordContent = `
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+  <meta charset="utf-8">
+  <title>Raport Dostępności Web</title>
+  <style>
+    @page {
+      margin: 2.54cm;
+      mso-header-margin: 1.27cm;
+      mso-footer-margin: 1.27cm;
+    }
+    body {
+      font-family: 'Calibri', sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .title {
+      font-size: 24pt;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      font-size: 14pt;
+      color: #64748b;
+    }
+    .section {
+      margin-bottom: 25px;
+    }
+    .section-title {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #1e40af;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .summary-table th, .summary-table td {
+      border: 1px solid #d1d5db;
+      padding: 12px;
+      text-align: left;
+    }
+    .summary-table th {
+      background-color: #f8fafc;
+      font-weight: bold;
+      color: #374151;
+    }
+    .violation {
+      margin-bottom: 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .violation-critical {
+      border-left: 5px solid #dc2626;
+      background-color: #fef2f2;
+    }
+    .violation-serious {
+      border-left: 5px solid #ea580c;
+      background-color: #fff7ed;
+    }
+    .violation-moderate {
+      border-left: 5px solid #d97706;
+      background-color: #fffbeb;
+    }
+    .violation-minor {
+      border-left: 5px solid #65a30d;
+      background-color: #f7fee7;
+    }
+    .violation-title {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .violation-impact {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 9pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .impact-critical {
+      background-color: #dc2626;
+      color: white;
+    }
+    .impact-serious {
+      background-color: #ea580c;
+      color: white;
+    }
+    .impact-moderate {
+      background-color: #d97706;
+      color: white;
+    }
+    .impact-minor {
+      background-color: #65a30d;
+      color: white;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 10pt;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">Raport Dostępności Web</div>
+    <div class="subtitle">Analiza zgodności WCAG 2.1</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Podsumowanie Skanowania</div>
+    <table class="summary-table">
+      <tr>
+        <th>URL Strony</th>
+        <td>${url}</td>
+      </tr>
+      <tr>
+        <th>Data Skanowania</th>
+        <td>${currentDate}</td>
+      </tr>
+      <tr>
+        <th>ID Skanowania</th>
+        <td>#${scanId}</td>
+      </tr>
+      <tr>
+        <th>Łączne Naruszenia</th>
+        <td>${totalViolations}</td>
+      </tr>
+      <tr>
+        <th>Zaliczone Testy</th>
+        <td>${passedTests}</td>
+      </tr>
+      <tr>
+        <th>Przeskanowane Elementy</th>
+        <td>${elementsScanned}</td>
+      </tr>
+      <tr>
+        <th>Wynik Zgodności</th>
+        <td>${complianceScore}%</td>
+      </tr>
+    </table>
+  </div>`;
+
+  if (totalViolations > 0) {
+    wordContent += `
+  <div class="section">
+    <div class="section-title">Wykryte Naruszenia Dostępności</div>`;
+
+    scanResult.violations.forEach((violation: any, index: number) => {
+      const impactClass = `violation-${violation.impact}`;
+      const badgeClass = `impact-${violation.impact}`;
+      const nodeCount = violation.nodes?.length || 0;
+      
+      wordContent += `
+    <div class="violation ${impactClass}">
+      <div class="violation-title">${violation.help || 'Nieznane naruszenie'}</div>
+      <span class="violation-impact ${badgeClass}">${violation.impact}</span>
+      <p><strong>Opis:</strong> ${violation.description || 'Brak opisu'}</p>
+      <p><strong>Dotkniętych elementów:</strong> ${nodeCount}</p>
+      <p><strong>Znaczniki WCAG:</strong> ${violation.tags ? violation.tags.join(', ') : 'Brak'}</p>
+      ${violation.helpUrl ? `<p><strong>Więcej informacji:</strong> <a href="${violation.helpUrl}">${violation.helpUrl}</a></p>` : ''}
+    </div>`;
+    });
+
+    wordContent += `
+  </div>`;
+  } else {
+    wordContent += `
+  <div class="section">
+    <div class="section-title">Wyniki Skanowania</div>
+    <p style="color: #16a34a; font-size: 14pt; font-weight: bold;">✓ Świetna robota! Nie znaleziono problemów z dostępnością.</p>
+  </div>`;
+  }
+
+  wordContent += `
+  <div class="footer">
+    <p>Raport wygenerowany przez Analizator Dostępności Web | ${currentDate}</p>
+    <p>Ten raport zawiera analizę zgodności z wytycznymi WCAG 2.1</p>
+  </div>
+</body>
+</html>`;
+
+  return wordContent;
 }
