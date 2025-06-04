@@ -71,6 +71,13 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
     <div className="report-section mt-8">
       <h3 className="text-xl font-bold mb-6">Naruszenia Dostępności</h3>
       
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+        <p className="text-sm text-blue-800">
+          <strong>Struktura wyników:</strong> Każde naruszenie może zawierać wiele elementów HTML. 
+          Liczba obok nazwy naruszenia pokazuje ile konkretnych elementów ma ten sam problem.
+        </p>
+      </div>
+      
       <div className="space-y-6">
         {violations.map((violation, index) => (
           <Card 
