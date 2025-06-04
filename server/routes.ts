@@ -14,7 +14,7 @@ const scanRequestSchema = z.object({
 
 const reportExportRequestSchema = z.object({
   scanId: z.number(),
-  format: z.enum(['pdf', 'json', 'docx']),
+  format: z.enum(['pdf', 'json', 'csv']),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -86,17 +86,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.json"`);
         res.json(scanResult);
       } else if (format === 'pdf') {
-        const pdfBuffer = await generatePDFReport(scanResult, scanId);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.pdf"`);
-        res.send(pdfBuffer);
+        try {
+          const pdfBuffer = await generatePDFReport(scanResult, scanId);
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.pdf"`);
+          res.send(pdfBuffer);
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          res.status(500).json({ message: "Błąd podczas generowania raportu PDF" });
+        }
       } else if (format === 'csv') {
         const csvContent = generateCSVReport(scanResult);
         res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.csv"`);
+        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.csv"`);
         res.send(csvContent);
       } else {
-        res.status(400).json({ message: "Unsupported export format" });
+        res.status(400).json({ message: "Nieobsługiwany format eksportu" });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -434,10 +439,10 @@ async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffe
     
     const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html lang="pl">
     <head>
         <meta charset="UTF-8">
-        <title>Accessibility Report</title>
+        <title>Raport Dostępności</title>
         <style>
             body { 
                 font-family: Arial, sans-serif; 
@@ -568,36 +573,36 @@ async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffe
     </head>
     <body>
         <div class="header">
-            <div class="title">Web Accessibility Report</div>
+            <div class="title">Raport Dostępności Web</div>
             <div class="subtitle">URL: ${scanResult.url}</div>
-            <div class="subtitle">Scan Date: ${new Date(scanResult.scanDate).toLocaleDateString()}</div>
-            <div class="subtitle">WCAG Level: ${scanResult.wcagLevel}</div>
+            <div class="subtitle">Data skanowania: ${new Date(scanResult.scanDate).toLocaleDateString('pl-PL')}</div>
+            <div class="subtitle">Poziom WCAG: ${scanResult.wcagLevel}</div>
         </div>
 
         <div class="summary">
-            <h2>Summary</h2>
+            <h2>Podsumowanie</h2>
             <div class="stat-grid">
                 <div class="stat-item">
-                    <div class="stat-label">Total Violations</div>
+                    <div class="stat-label">Łączna liczba naruszeń</div>
                     <div class="stat-value">${totalViolations}</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Passed Tests</div>
+                    <div class="stat-label">Zaliczone testy</div>
                     <div class="stat-value" style="color: #27ae60;">${scanResult.passedTests || 0}</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Elements Scanned</div>
+                    <div class="stat-label">Przeskanowane elementy</div>
                     <div class="stat-value" style="color: #3498db;">${scanResult.elementsScanned || 0}</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Compliance Score</div>
+                    <div class="stat-label">Wynik zgodności</div>
                     <div class="stat-value" style="color: #9b59b6;">${scanResult.complianceScore || 0}%</div>
                 </div>
             </div>
         </div>
 
         <div class="violations">
-            <h2>Accessibility Violations (${totalViolations})</h2>
+            <h2>Naruszenia dostępności (${totalViolations})</h2>
             ${violations.map((violation: any, index: number) => `
                 <div class="violation">
                     <div class="violation-header">
@@ -608,13 +613,13 @@ async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffe
                     <div class="violation-tags">
                         ${violation.tags.map((tag: string) => `<span class="tag">${tag}</span>`).join('')}
                     </div>
-                    <div class="nodes-count">Affected elements: ${violation.nodes.length}</div>
+                    <div class="nodes-count">Dotknięte elementy: ${violation.nodes.length}</div>
                 </div>
             `).join('')}
         </div>
 
         <div class="footer">
-            <p>Generated by Web Accessibility Analyzer • Report ID: ${scanId}</p>
+            <p>Wygenerowano przez Analizator Dostępności Web • ID raportu: ${scanId}</p>
         </div>
     </body>
     </html>
@@ -641,8 +646,8 @@ async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffe
 function generateCSVReport(scanResult: any): string {
   const violations = scanResult.violations || [];
   
-  // CSV header
-  let csv = 'Violation ID,Description,Impact,Help,WCAG Tags,Affected Elements,Help URL\n';
+  // CSV header in Polish
+  let csv = 'ID Naruszenia,Opis,Wpływ,Pomoc,Tagi WCAG,Dotknięte Elementy,URL Pomocy\n';
   
   // Add violations data
   violations.forEach((violation: any) => {
