@@ -6,10 +6,11 @@ export const scanResults = pgTable("scan_results", {
   id: serial("id").primaryKey(),
   url: text("url").notNull(),
   status: text("status").notNull(), // 'pending', 'completed', 'failed'
-  violations: jsonb("violations").default([]),
-  passedTests: integer("passed_tests").default(0),
-  elementsScanned: integer("elements_scanned").default(0),
-  complianceScore: integer("compliance_score").default(0),
+  violations: jsonb("violations").notNull().default([]),
+  passedTests: integer("passed_tests").notNull().default(0),
+  elementsScanned: integer("elements_scanned").notNull().default(0),
+  complianceScore: integer("compliance_score").notNull().default(0),
+  wcagLevel: text("wcag_level").notNull().default('AA'), // 'A', 'AA', 'AAA'
   scanDate: timestamp("scan_date").defaultNow().notNull(),
   errorMessage: text("error_message"),
 });
@@ -43,6 +44,7 @@ export interface ViolationNode {
 
 export interface ScanRequest {
   url: string;
+  wcagLevel: 'A' | 'AA' | 'AAA';
 }
 
 export interface ScanResponse {

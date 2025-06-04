@@ -21,7 +21,13 @@ export class MemStorage implements IStorage {
     const scanResult: ScanResult = {
       ...insertScanResult,
       id,
+      violations: insertScanResult.violations || [],
+      passedTests: insertScanResult.passedTests || 0,
+      elementsScanned: insertScanResult.elementsScanned || 0,
+      complianceScore: insertScanResult.complianceScore || 0,
+      wcagLevel: insertScanResult.wcagLevel || 'AA',
       scanDate: new Date(),
+      errorMessage: insertScanResult.errorMessage || null,
     };
     this.scanResults.set(id, scanResult);
     return scanResult;

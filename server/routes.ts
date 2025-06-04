@@ -8,11 +8,12 @@ import { AxePuppeteer } from "@axe-core/puppeteer";
 
 const scanRequestSchema = z.object({
   url: z.string().url("Please provide a valid URL"),
+  wcagLevel: z.enum(['A', 'AA', 'AAA']).default('AA'),
 });
 
 const reportExportRequestSchema = z.object({
   scanId: z.number(),
-  format: z.enum(['pdf', 'json']),
+  format: z.enum(['pdf', 'json', 'docx']),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -20,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start accessibility scan
   app.post("/api/scan", async (req, res) => {
     try {
-      const { url } = scanRequestSchema.parse(req.body);
+      const { url, wcagLevel } = scanRequestSchema.parse(req.body);
       
       // Create initial scan record
       const scanResult = await storage.createScanResult({
@@ -30,10 +31,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passedTests: 0,
         elementsScanned: 0,
         complianceScore: 0,
+        wcagLevel,
       });
 
       // Start scan in background
-      performAccessibilityScan(scanResult.id, url);
+      performAccessibilityScan(scanResult.id, url, wcagLevel);
 
       const response: ScanResponse = {
         scanId: scanResult.id,
@@ -101,13 +103,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Background scan function
-async function performAccessibilityScan(scanId: number, url: string) {
+async function performAccessibilityScan(scanId: number, url: string, wcagLevel: 'A' | 'AA' | 'AAA' = 'AA') {
   let browser;
   try {
-    // Launch Puppeteer browser
+    // Launch Puppeteer browser using system Chromium
+    const chromiumPath = require('child_process').execSync('which chromium').toString().trim();
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
+      executablePath: chromiumPath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -132,7 +135,7 @@ async function performAccessibilityScan(scanId: number, url: string) {
     const results = await new AxePuppeteer(page).analyze();
 
     // Process violations
-    const violations: Violation[] = results.violations.map(violation => ({
+    const violations: any[] = results.violations.map(violation => ({
       id: violation.id,
       impact: violation.impact as 'minor' | 'moderate' | 'serious' | 'critical',
       tags: violation.tags,
