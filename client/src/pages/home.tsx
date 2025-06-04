@@ -41,35 +41,35 @@ export default function Home() {
           <Card className="p-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-none">
             <h4 className="text-xl font-bold mb-4 flex items-center">
               <span className="text-yellow-500 mr-2">★</span>
-              General Recommendations
+              Ogólne Zalecenia
             </h4>
             <div className="grid md:grid-cols-2 gap-4">
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <span className="text-green-500 mr-2">✓</span>
-                  Implement skip navigation links
+                  Implementuj linki pomijania nawigacji
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-500 mr-2">✓</span>
-                  Ensure keyboard navigation works
+                  Zapewnij działającą nawigację klawiaturą
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-500 mr-2">✓</span>
-                  Use semantic HTML elements
+                  Używaj semantycznych elementów HTML
                 </li>
               </ul>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <span className="text-green-500 mr-2">✓</span>
-                  Test with screen readers
+                  Testuj z czytnikami ekranu
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-500 mr-2">✓</span>
-                  Provide text alternatives
+                  Zapewnij alternatywy tekstowe
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-500 mr-2">✓</span>
-                  Maintain focus indicators
+                  Utrzymuj wskaźniki fokusu
                 </li>
               </ul>
             </div>
@@ -82,12 +82,12 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600 mb-4 md:mb-0">
-              © 2024 AccessiScan. Powered by axe-core & Puppeteer.
+              © 2024 Analizator Dostępności. Napędzany przez axe-core i Puppeteer.
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-600 hover:text-gray-800">Privacy Policy</a>
-              <a href="#" className="text-gray-600 hover:text-gray-800">Terms of Service</a>
-              <a href="#" className="text-gray-600 hover:text-gray-800">Support</a>
+              <a href="#" className="text-gray-600 hover:text-gray-800">Polityka Prywatności</a>
+              <a href="#" className="text-gray-600 hover:text-gray-800">Warunki Usługi</a>
+              <a href="#" className="text-gray-600 hover:text-gray-800">Wsparcie</a>
             </div>
           </div>
         </div>

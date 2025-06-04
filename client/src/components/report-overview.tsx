@@ -56,14 +56,14 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
       URL.revokeObjectURL(url);
       
       toast({
-        title: "Export Successful",
-        description: `Report exported as ${format.toUpperCase()}`,
+        title: "Eksport Zakończony Pomyślnie",
+        description: `Raport wyeksportowany jako ${format.toUpperCase()}`,
       });
     },
     onError: () => {
       toast({
-        title: "Export Failed",
-        description: "Failed to export the report. Please try again.",
+        title: "Błąd Eksportu",
+        description: "Nie udało się wyeksportować raportu. Spróbuj ponownie.",
         variant: "destructive",
       });
     },

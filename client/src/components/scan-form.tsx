@@ -150,13 +150,13 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
         {isScanning && (
           <div className="mt-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600">Scanning progress</span>
+              <span className="text-sm text-gray-600">Postęp skanowania</span>
               <span className="text-sm text-gray-600">{scanProgress}%</span>
             </div>
             <Progress value={scanProgress} className="h-2" />
             <div className="text-center mt-3">
               <small className="text-gray-600">
-                {scanResult?.status === 'pending' ? 'Analyzing accessibility violations...' : 'Initializing scan...'}
+                {scanResult?.status === 'pending' ? 'Analizowanie naruszeń dostępności...' : 'Inicjalizacja skanowania...'}
               </small>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
         {scanResult?.status === 'failed' && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 text-sm">
-              <strong>Scan failed:</strong> {scanResult?.errorMessage || 'An unexpected error occurred.'}
+              <strong>Skanowanie nieudane:</strong> {scanResult?.errorMessage || 'Wystąpił nieoczekiwany błąd.'}
             </p>
           </div>
         )}
