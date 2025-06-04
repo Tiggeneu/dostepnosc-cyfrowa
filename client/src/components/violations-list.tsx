@@ -25,8 +25,8 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
       <div className="report-section mt-8">
         <Card className="p-8 text-center">
           <div className="text-green-600 text-4xl mb-4">✓</div>
-          <h3 className="text-xl font-bold mb-2">No Accessibility Violations Found!</h3>
-          <p className="text-gray-600">This website appears to comply with WCAG 2.1 accessibility guidelines.</p>
+          <h3 className="text-xl font-bold mb-2">Nie znaleziono naruszeń dostępności!</h3>
+          <p className="text-gray-600">Ta strona internetowa wydaje się być zgodna z wytycznymi dostępności WCAG 2.1.</p>
         </Card>
       </div>
     );
@@ -64,7 +64,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
       <div className="space-y-6">
         {violations.map((violation, index) => (
           <Card 
-            key={violation.id} 
+            key={`${violation.id}-${index}`} 
             className={`violation-card border-l-4 p-6 ${getSeverityColor(violation.impact)}`}
           >
             <div className="flex justify-between items-start mb-4">

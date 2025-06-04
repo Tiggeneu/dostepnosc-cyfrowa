@@ -123,31 +123,31 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
           <div className="metric-number text-red-600 text-4xl font-bold">
             {totalViolations}
           </div>
-          <div className="font-semibold mt-2">Total Violations</div>
-          <small className="text-gray-600">WCAG 2.1 Issues</small>
+          <div className="font-semibold mt-2">Łączne naruszenia</div>
+          <small className="text-gray-600">Problemy WCAG 2.1</small>
         </Card>
         
         <Card className="metric-card text-center p-6">
           <div className="metric-number text-green-600 text-4xl font-bold">
             {scanResult.passedTests || 0}
           </div>
-          <div className="font-semibold mt-2">Passed Tests</div>
-          <small className="text-gray-600">Compliant Elements</small>
+          <div className="font-semibold mt-2">Zaliczone testy</div>
+          <small className="text-gray-600">Zgodne elementy</small>
         </Card>
         
         <Card className="metric-card text-center p-6">
           <div className="metric-number text-blue-600 text-4xl font-bold">
             {scanResult.elementsScanned || 0}
           </div>
-          <div className="font-semibold mt-2">Elements Scanned</div>
-          <small className="text-gray-600">Total DOM Nodes</small>
+          <div className="font-semibold mt-2">Przeskanowane elementy</div>
+          <small className="text-gray-600">Łączne węzły DOM</small>
         </Card>
         
         <Card className="metric-card text-center p-6">
           <div className="metric-number text-yellow-600 text-4xl font-bold">
             {scanResult.complianceScore || 0}%
           </div>
-          <div className="font-semibold mt-2">Compliance Score</div>
+          <div className="font-semibold mt-2">Wynik zgodności</div>
           <small className="text-gray-600">WCAG 2.1 AA</small>
         </Card>
       </div>
