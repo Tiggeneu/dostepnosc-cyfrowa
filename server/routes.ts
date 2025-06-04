@@ -14,7 +14,7 @@ const scanRequestSchema = z.object({
 
 const reportExportRequestSchema = z.object({
   scanId: z.number(),
-  format: z.enum(['pdf', 'json', 'csv']),
+  format: z.enum(['pdf', 'json', 'csv', 'docx']),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -100,6 +100,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.csv"`);
         res.send(csvContent);
+      } else if (format === 'docx') {
+        const docxContent = generateWordReport(scanResult, scanId);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.docx"`);
+        res.send(docxContent);
       } else {
         res.status(400).json({ message: "Nieobsługiwany format eksportu" });
       }
@@ -280,13 +285,13 @@ function analyzeHTMLContent(html: string, url: string, wcagLevel: 'A' | 'AA' | '
         id: "image-alt",
         impact: "critical",
         tags: ["wcag2a", "wcag111"],
-        description: "Images must have alternate text",
-        help: "Ensure every image element has meaningful alt text",
+        description: "Obrazy muszą mieć tekst alternatywny",
+        help: "Upewnij się, że każdy element obrazu ma znaczący tekst alternatywny",
         helpUrl: "https://dequeuniversity.com/rules/axe/4.7/image-alt",
         nodes: [{
           html: img.substring(0, 100) + (img.length > 100 ? '...' : ''),
           target: [`img:nth-of-type(${index + 1})`],
-          failureSummary: "Element does not have an alt attribute or has empty alt text"
+          failureSummary: "Element nie ma atrybutu alt lub ma pusty tekst alt"
         }]
       });
     }
@@ -307,13 +312,13 @@ function analyzeHTMLContent(html: string, url: string, wcagLevel: 'A' | 'AA' | '
         id: "heading-order",
         impact: "moderate",
         tags: ["wcag2a", "wcag131"],
-        description: "Heading levels should only increase by one",
-        help: "Ensure headings are in a logical order",
+        description: "Poziomy nagłówków powinny zwiększać się tylko o jeden",
+        help: "Upewnij się, że nagłówki są w logicznej kolejności",
         helpUrl: "https://dequeuniversity.com/rules/axe/4.7/heading-order",
         nodes: [{
           html: match[0] + '...',
           target: [`h${level}:nth-of-type(${index + 1})`],
-          failureSummary: `Heading order invalid - h${level} follows h${lastLevel}`
+          failureSummary: `Nieprawidłowa kolejność nagłówków - h${level} następuje po h${lastLevel}`
         }]
       });
     }
