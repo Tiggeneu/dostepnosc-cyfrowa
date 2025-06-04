@@ -5,6 +5,7 @@ import { insertScanResultSchema, type ScanRequest, type ScanResponse, type Repor
 import { z } from "zod";
 import puppeteer from "puppeteer";
 import { AxePuppeteer } from "@axe-core/puppeteer";
+import { execSync } from "child_process";
 
 const scanRequestSchema = z.object({
   url: z.string().url("Please provide a valid URL"),
@@ -170,7 +171,7 @@ async function performAccessibilityScan(scanId: number, url: string, wcagLevel: 
   let browser;
   try {
     // Launch Puppeteer browser using system Chromium
-    const chromiumPath = require('child_process').execSync('which chromium').toString().trim();
+    const chromiumPath = execSync('which chromium').toString().trim();
     browser = await puppeteer.launch({
       headless: true,
       executablePath: chromiumPath,
