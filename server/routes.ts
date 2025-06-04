@@ -63,8 +63,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Scan not found" });
       }
 
+      console.log(`Scan result status: ${scanResult.status}, violations count: ${scanResult.violations?.length || 0}`);
       res.json(scanResult);
     } catch (error) {
+      console.error('Error retrieving scan result:', error);
       res.status(500).json({ message: "Failed to retrieve scan result" });
     }
   });
