@@ -829,21 +829,36 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
     })
   );
 
-  // Summary table
+  // Summary table with professional styling
   const summaryTable = new Table({
     width: {
       size: 100,
       type: WidthType.PERCENTAGE,
     },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 1 },
+      bottom: { style: BorderStyle.SINGLE, size: 1 },
+      left: { style: BorderStyle.SINGLE, size: 1 },
+      right: { style: BorderStyle.SINGLE, size: 1 },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
+      insideVertical: { style: BorderStyle.SINGLE, size: 1 },
+    },
     rows: [
       new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "URL Strony", bold: true })] })],
-            width: { size: 30, type: WidthType.PERCENTAGE }
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "URL Strony", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            width: { size: 30, type: WidthType.PERCENTAGE },
+            shading: { fill: "f8fafc" }
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: url })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: url, size: 20 })],
+              spacing: { before: 100, after: 100 }
+            })],
             width: { size: 70, type: WidthType.PERCENTAGE }
           }),
         ],
@@ -851,60 +866,102 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
       new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Data Skanowania", bold: true })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "Data Skanowania", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            shading: { fill: "f8fafc" }
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: currentDate })] })],
-          }),
-        ],
-      }),
-      new TableRow({
-        children: [
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "ID Skanowania", bold: true })] })],
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: `#${scanId}` })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: currentDate, size: 20 })],
+              spacing: { before: 100, after: 100 }
+            })],
           }),
         ],
       }),
       new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Łączne Naruszenia", bold: true })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "ID Skanowania", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            shading: { fill: "f8fafc" }
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: totalViolations.toString(), bold: true, color: "dc2626" })] })],
-          }),
-        ],
-      }),
-      new TableRow({
-        children: [
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Zaliczone Testy", bold: true })] })],
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: passedTests.toString(), bold: true, color: "16a34a" })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: `#${scanId}`, size: 20, bold: true })],
+              spacing: { before: 100, after: 100 }
+            })],
           }),
         ],
       }),
       new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Przeskanowane Elementy", bold: true })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "Łączne Naruszenia", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            shading: { fill: "f8fafc" }
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: elementsScanned.toString() })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: totalViolations.toString(), bold: true, color: "dc2626", size: 24 })],
+              spacing: { before: 100, after: 100 }
+            })],
           }),
         ],
       }),
       new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Wynik Zgodności", bold: true })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "Zaliczone Testy", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            shading: { fill: "f8fafc" }
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: `${complianceScore}%`, bold: true, color: "2563eb" })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: passedTests.toString(), bold: true, color: "16a34a", size: 24 })],
+              spacing: { before: 100, after: 100 }
+            })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "Przeskanowane Elementy", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            shading: { fill: "f8fafc" }
+          }),
+          new TableCell({
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: elementsScanned.toString(), size: 20 })],
+              spacing: { before: 100, after: 100 }
+            })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: "Wynik Zgodności", bold: true, color: "1e40af" })],
+              spacing: { before: 100, after: 100 }
+            })],
+            shading: { fill: "f8fafc" }
+          }),
+          new TableCell({
+            children: [new Paragraph({ 
+              children: [new TextRun({ text: `${complianceScore}%`, bold: true, color: "2563eb", size: 28 })],
+              spacing: { before: 100, after: 100 }
+            })],
           }),
         ],
       }),
@@ -940,82 +997,148 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
                          violation.impact === 'serious' ? 'ea580c' :
                          violation.impact === 'moderate' ? 'd97706' : '65a30d';
 
-      // Violation title
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `${index + 1}. ${violation.help || 'Nieznane naruszenie'}`,
-              bold: true,
-              size: 22,
-              color: "2563eb"
-            }),
-          ],
-          spacing: { before: 300, after: 100 }
-        })
-      );
+      const impactBgColor = violation.impact === 'critical' ? 'fef2f2' : 
+                           violation.impact === 'serious' ? 'fff7ed' :
+                           violation.impact === 'moderate' ? 'fffbeb' : 'f7fee7';
 
-      // Impact level
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: "Poziom: ", bold: true }),
-            new TextRun({ 
-              text: impactText, 
-              bold: true, 
-              color: impactColor 
-            }),
-          ],
-          spacing: { after: 100 }
-        })
-      );
+      // Create violation table for better visual formatting
+      const violationTable = new Table({
+        width: {
+          size: 100,
+          type: WidthType.PERCENTAGE,
+        },
+        borders: {
+          top: { style: BorderStyle.SINGLE, size: 2, color: impactColor },
+          bottom: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+          left: { style: BorderStyle.SINGLE, size: 6, color: impactColor },
+          right: { style: BorderStyle.SINGLE, size: 1, color: "e5e7eb" },
+          insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+          insideVertical: { style: BorderStyle.NONE, size: 0 },
+        },
+        rows: [
+          // Title row
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `${index + 1}. ${violation.help || 'Nieznane naruszenie'}`,
+                        bold: true,
+                        size: 24,
+                        color: "1e40af"
+                      }),
+                    ],
+                    spacing: { before: 150, after: 150 }
+                  })
+                ],
+                shading: { fill: impactBgColor },
+                margins: { top: 100, bottom: 100, left: 150, right: 150 }
+              }),
+            ],
+          }),
+          // Impact level row
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "🚨 Poziom wpływu: ", bold: true, size: 22 }),
+                      new TextRun({ 
+                        text: impactText, 
+                        bold: true, 
+                        color: impactColor,
+                        size: 22
+                      }),
+                    ],
+                    spacing: { before: 100, after: 100 }
+                  })
+                ],
+                margins: { top: 50, bottom: 50, left: 150, right: 150 }
+              }),
+            ],
+          }),
+          // Description row
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "📝 Opis problemu:", bold: true, size: 20 }),
+                    ],
+                    spacing: { before: 100, after: 50 }
+                  }),
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: violation.description || 'Brak opisu', size: 20 }),
+                    ],
+                    spacing: { after: 100 }
+                  })
+                ],
+                margins: { top: 50, bottom: 50, left: 150, right: 150 }
+              }),
+            ],
+          }),
+          // Statistics row
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "📊 Statystyki:", bold: true, size: 20 }),
+                    ],
+                    spacing: { before: 100, after: 50 }
+                  }),
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "• Dotkniętych elementów: ", bold: true, size: 18 }),
+                      new TextRun({ text: nodeCount.toString(), size: 18, color: impactColor, bold: true }),
+                    ],
+                    spacing: { after: 50 }
+                  }),
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "• Znaczniki WCAG: ", bold: true, size: 18 }),
+                      new TextRun({ text: violation.tags ? violation.tags.join(', ') : 'Brak', size: 18 }),
+                    ],
+                    spacing: { after: 100 }
+                  })
+                ],
+                margins: { top: 50, bottom: 50, left: 150, right: 150 }
+              }),
+            ],
+          }),
+        ],
+      });
 
-      // Description
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: "Opis: ", bold: true }),
-            new TextRun({ text: violation.description || 'Brak opisu' }),
-          ],
-          spacing: { after: 100 }
-        })
-      );
+      children.push(violationTable);
 
-      // Affected elements
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: "Dotkniętych elementów: ", bold: true }),
-            new TextRun({ text: nodeCount.toString() }),
-          ],
-          spacing: { after: 100 }
-        })
-      );
-
-      // WCAG tags
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: "Znaczniki WCAG: ", bold: true }),
-            new TextRun({ text: violation.tags ? violation.tags.join(', ') : 'Brak' }),
-          ],
-          spacing: { after: 100 }
-        })
-      );
-
-      // Help URL
+      // Help URL as separate paragraph with better styling
       if (violation.helpUrl) {
         children.push(
           new Paragraph({
             children: [
-              new TextRun({ text: "Więcej informacji: ", bold: true }),
+              new TextRun({ text: "🔗 Więcej informacji: ", bold: true, size: 18 }),
               new TextRun({ 
                 text: violation.helpUrl,
                 color: "2563eb",
-                underline: {}
+                underline: {},
+                size: 16
               }),
             ],
-            spacing: { after: 200 }
+            spacing: { before: 100, after: 300 },
+            alignment: AlignmentType.LEFT
+          })
+        );
+      } else {
+        children.push(
+          new Paragraph({
+            text: "",
+            spacing: { after: 300 }
           })
         );
       }
