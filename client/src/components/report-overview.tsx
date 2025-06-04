@@ -21,14 +21,13 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
     mutationFn: async (format: 'pdf' | 'json' | 'csv' | 'docx') => {
       const response = await apiRequest("POST", "/api/export", { scanId, format });
       
-      if (format === 'pdf') {
-        return await response.text(); // HTML content for PDF
-      } else if (format === 'csv') {
-        return await response.text();
-      } else if (format === 'docx') {
-        return await response.text(); // HTML content for Word
-      } else {
+      // Check content type to determine how to handle response
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType?.includes('application/json')) {
         return await response.json();
+      } else {
+        return await response.text();
       }
     },
     onSuccess: (data, format) => {
@@ -45,8 +44,8 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
         blob = new Blob([data as string], { type: 'text/csv' });
         filename = `raport-dostepnosci-${scanId}.csv`;
       } else if (format === 'docx') {
-        blob = new Blob([data as string], { type: 'text/html' });
-        filename = `raport-dostepnosci-${scanId}.html`;
+        blob = new Blob([data as string], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        filename = `raport-dostepnosci-${scanId}.docx`;
       } else {
         return;
       }

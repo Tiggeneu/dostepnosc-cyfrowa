@@ -128,7 +128,7 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
           <div>
             <Button
               type="submit"
-              className="scan-button w-full"
+              className="w-full"
               disabled={isScanning}
             >
               {isScanning ? (

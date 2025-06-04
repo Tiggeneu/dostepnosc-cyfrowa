@@ -83,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (format === 'json') {
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="accessibility-report-${scanId}.json"`);
+        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.json"`);
         res.json(scanResult);
       } else if (format === 'pdf') {
         try {
