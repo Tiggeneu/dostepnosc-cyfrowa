@@ -81,32 +81,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Scan not found" });
       }
 
-      if (format === 'json') {
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.json"`);
-        res.json(scanResult);
-      } else if (format === 'pdf') {
-        try {
-          const htmlContent = generateHTMLReport(scanResult, scanId);
-          res.setHeader('Content-Type', 'text/html');
-          res.setHeader('Content-Disposition', `inline; filename="raport-dostepnosci-${scanId}.html"`);
-          res.send(htmlContent);
-        } catch (error) {
-          console.error('PDF generation error:', error);
-          res.status(500).json({ message: "Błąd podczas generowania raportu PDF" });
-        }
-      } else if (format === 'csv') {
-        const csvContent = generateCSVReport(scanResult);
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.csv"`);
-        res.send(csvContent);
-      } else if (format === 'docx') {
+      if (format === 'docx') {
         const docxBuffer = await generateWordReport(scanResult, scanId);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.docx"`);
         res.send(docxBuffer);
       } else {
-        res.status(400).json({ message: "Nieobsługiwany format eksportu" });
+        res.status(400).json({ message: "Obsługiwany jest tylko format Word (.docx)" });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -658,101 +639,7 @@ async function generatePDFReport(scanResult: any, scanId: number): Promise<Buffe
   }
 }
 
-function generateHTMLReport(scanResult: any, scanId: number): string {
-  const violations = scanResult.violations || [];
-  const totalViolations = violations.length;
-  
-  return `
-    <!DOCTYPE html>
-    <html lang="pl">
-    <head>
-        <meta charset="UTF-8">
-        <title>Raport Dostępności</title>
-        <style>
-            body { 
-                font-family: Arial, sans-serif; 
-                margin: 40px; 
-                line-height: 1.6;
-                color: #333;
-            }
-            .header { 
-                border-bottom: 2px solid #e74c3c; 
-                padding-bottom: 20px; 
-                margin-bottom: 30px;
-            }
-            .title { 
-                color: #e74c3c; 
-                font-size: 28px; 
-                font-weight: bold;
-                margin-bottom: 10px;
-            }
-            .subtitle { 
-                color: #666; 
-                font-size: 16px;
-                margin-bottom: 5px;
-            }
-            .summary { 
-                background: #f8f9fa; 
-                padding: 20px; 
-                border-left: 4px solid #3498db;
-                margin-bottom: 30px;
-            }
-            .violation { 
-                background: #fff; 
-                border: 1px solid #ddd; 
-                border-radius: 5px;
-                padding: 20px; 
-                margin-bottom: 20px;
-                page-break-inside: avoid;
-            }
-            .impact { 
-                padding: 4px 12px; 
-                border-radius: 20px; 
-                font-size: 12px;
-                font-weight: bold;
-                text-transform: uppercase;
-            }
-            .impact.critical { background: #e74c3c; color: white; }
-            .impact.serious { background: #f39c12; color: white; }
-            .impact.moderate { background: #f1c40f; color: #333; }
-            .impact.minor { background: #95a5a6; color: white; }
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <div class="title">Raport Dostępności Web</div>
-            <div class="subtitle">URL: ${scanResult.url}</div>
-            <div class="subtitle">Data skanowania: ${new Date(scanResult.scanDate).toLocaleDateString('pl-PL')}</div>
-            <div class="subtitle">Poziom WCAG: ${scanResult.wcagLevel}</div>
-        </div>
 
-        <div class="summary">
-            <h2>Podsumowanie</h2>
-            <p>Łączne naruszenia: ${totalViolations}</p>
-            <p>Zaliczone testy: ${scanResult.passedTests || 0}</p>
-            <p>Przeskanowane elementy: ${scanResult.elementsScanned || 0}</p>
-            <p>Wynik zgodności: ${scanResult.complianceScore || 0}%</p>
-        </div>
-
-        <div class="violations">
-            <h2>Naruszenia dostępności (${totalViolations})</h2>
-            ${violations.map((violation: any, index: number) => `
-                <div class="violation">
-                    <h3>${index + 1}. ${violation.description}</h3>
-                    <span class="impact ${violation.impact}">${violation.impact}</span>
-                    <p><strong>Pomoc:</strong> ${violation.help}</p>
-                    <p><strong>Dotknięte elementy:</strong> ${violation.nodes.length}</p>
-                </div>
-            `).join('')}
-        </div>
-
-        <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ccc; text-align: center; color: #777; font-size: 12px;">
-            <p>Wygenerowano przez Analizator Dostępności Web • ID raportu: ${scanId}</p>
-        </div>
-    </body>
-    </html>
-  `;
-}
 
 function generateCSVReport(scanResult: any): string {
   const violations = scanResult.violations || [];

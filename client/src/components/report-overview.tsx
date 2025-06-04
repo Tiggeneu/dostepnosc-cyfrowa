@@ -92,42 +92,16 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             <span className="ml-1">{new Date(scanResult.scanDate).toLocaleString('pl-PL')}</span>
           </p>
         </div>
-        <div className="flex gap-2 mt-4 md:mt-0">
+        <div className="flex justify-center mt-4 md:mt-0">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportMutation.mutate('pdf')}
-            disabled={exportMutation.isPending}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Eksportuj PDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportMutation.mutate('csv')}
-            disabled={exportMutation.isPending}
-          >
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Eksportuj CSV
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+            variant="default"
+            size="lg"
             onClick={() => exportMutation.mutate('docx')}
             disabled={exportMutation.isPending}
+            className="px-8 py-3"
           >
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Eksportuj Word
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportMutation.mutate('json')}
-            disabled={exportMutation.isPending}
-          >
-            <Code className="w-4 h-4 mr-2" />
-            Eksportuj JSON
+            <FileText className="w-5 h-5 mr-3" />
+            Pobierz Raport Word
           </Button>
         </div>
       </div>

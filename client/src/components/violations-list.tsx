@@ -139,7 +139,7 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
       {violations.length > 0 && (
         <div className="text-center mt-6">
           <p className="text-gray-600">
-            Showing all {violations.length} violation{violations.length !== 1 ? 's' : ''}
+            Wyświetlono wszystkie {violations.length} naruszeni{violations.length === 1 ? 'e' : violations.length < 5 ? 'a' : 'ń'}
           </p>
         </div>
       )}
