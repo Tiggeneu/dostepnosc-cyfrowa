@@ -26,6 +26,8 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
       
       if (contentType?.includes('application/json')) {
         return await response.json();
+      } else if (contentType?.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+        return await response.arrayBuffer();
       } else {
         return await response.text();
       }
@@ -44,8 +46,8 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
         blob = new Blob([data as string], { type: 'text/csv' });
         filename = `raport-dostepnosci-${scanId}.csv`;
       } else if (format === 'docx') {
-        blob = new Blob([data as string], { type: 'text/html; charset=utf-8' });
-        filename = `raport-dostepnosci-${scanId}.html`;
+        blob = new Blob([data as ArrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        filename = `raport-dostepnosci-${scanId}.docx`;
       } else {
         return;
       }

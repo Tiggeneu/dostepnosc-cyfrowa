@@ -101,10 +101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.csv"`);
         res.send(csvContent);
       } else if (format === 'docx') {
-        const htmlContent = generateWordReport(scanResult, scanId);
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.html"`);
-        res.send(htmlContent);
+        const docxBuffer = await generateWordReport(scanResult, scanId);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="raport-dostepnosci-${scanId}.docx"`);
+        res.send(docxBuffer);
       } else {
         res.status(400).json({ message: "Nieobsługiwany format eksportu" });
       }
@@ -773,7 +773,9 @@ function generateCSVReport(scanResult: any): string {
   return csv;
 }
 
-function generateWordReport(scanResult: any, scanId: number): string {
+async function generateWordReport(scanResult: any, scanId: number): Promise<Buffer> {
+  const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, AlignmentType, WidthType, HeadingLevel, BorderStyle } = await import('docx');
+  
   const currentDate = new Date().toLocaleDateString('pl-PL');
   const url = scanResult.url || 'Nieznany URL';
   const totalViolations = scanResult.violations?.length || 0;
@@ -781,212 +783,308 @@ function generateWordReport(scanResult: any, scanId: number): string {
   const elementsScanned = scanResult.elementsScanned || 0;
   const complianceScore = scanResult.complianceScore || 0;
 
-  // Generate HTML document with proper Polish character encoding for Word
-  let htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raport Dostępności Web</title>
-    <style>
-        body {
-            font-family: 'Calibri', 'Arial', sans-serif;
-            font-size: 11pt;
-            line-height: 1.6;
-            margin: 2.54cm;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .title {
-            font-size: 24pt;
-            font-weight: bold;
-            color: #1e40af;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            font-size: 14pt;
-            color: #64748b;
-        }
-        .section {
-            margin-bottom: 25px;
-        }
-        .section-title {
-            font-size: 16pt;
-            font-weight: bold;
-            color: #1e40af;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-        }
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .summary-table th, .summary-table td {
-            border: 1px solid #d1d5db;
-            padding: 12px;
-            text-align: left;
-        }
-        .summary-table th {
-            background-color: #f8fafc;
-            font-weight: bold;
-            color: #374151;
-        }
-        .violation {
-            margin-bottom: 20px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 15px;
-            page-break-inside: avoid;
-        }
-        .violation-critical {
-            border-left: 5px solid #dc2626;
-            background-color: #fef2f2;
-        }
-        .violation-serious {
-            border-left: 5px solid #ea580c;
-            background-color: #fff7ed;
-        }
-        .violation-moderate {
-            border-left: 5px solid #d97706;
-            background-color: #fffbeb;
-        }
-        .violation-minor {
-            border-left: 5px solid #65a30d;
-            background-color: #f7fee7;
-        }
-        .violation-title {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #1e40af;
-        }
-        .violation-impact {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 9pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-        .impact-critical {
-            background-color: #dc2626;
-            color: white;
-        }
-        .impact-serious {
-            background-color: #ea580c;
-            color: white;
-        }
-        .impact-moderate {
-            background-color: #d97706;
-            color: white;
-        }
-        .impact-minor {
-            background-color: #65a30d;
-            color: white;
-        }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            font-size: 10pt;
-            color: #6b7280;
-        }
-        @media print {
-            body { margin: 2cm; }
-            .violation { page-break-inside: avoid; }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="title">Raport Dostępności Web</div>
-        <div class="subtitle">Analiza zgodności WCAG 2.1</div>
-    </div>
+  // Create document sections
+  const children = [];
 
-    <div class="section">
-        <div class="section-title">Podsumowanie Skanowania</div>
-        <table class="summary-table">
-            <tr>
-                <th>URL Strony</th>
-                <td>${url}</td>
-            </tr>
-            <tr>
-                <th>Data Skanowania</th>
-                <td>${currentDate}</td>
-            </tr>
-            <tr>
-                <th>ID Skanowania</th>
-                <td>#${scanId}</td>
-            </tr>
-            <tr>
-                <th>Łączne Naruszenia</th>
-                <td><strong style="color: #dc2626;">${totalViolations}</strong></td>
-            </tr>
-            <tr>
-                <th>Zaliczone Testy</th>
-                <td><strong style="color: #16a34a;">${passedTests}</strong></td>
-            </tr>
-            <tr>
-                <th>Przeskanowane Elementy</th>
-                <td>${elementsScanned}</td>
-            </tr>
-            <tr>
-                <th>Wynik Zgodności</th>
-                <td><strong style="color: #2563eb;">${complianceScore}%</strong></td>
-            </tr>
-        </table>
-    </div>`;
+  // Header
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "RAPORT DOSTĘPNOŚCI WEB",
+          bold: true,
+          size: 32,
+          color: "2563eb"
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 }
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Analiza zgodności WCAG 2.1",
+          size: 24,
+          color: "64748b"
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 }
+    })
+  );
 
+  // Summary section title
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "PODSUMOWANIE SKANOWANIA",
+          bold: true,
+          size: 24,
+          color: "1e40af"
+        }),
+      ],
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 300, after: 200 }
+    })
+  );
+
+  // Summary table
+  const summaryTable = new Table({
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE,
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "URL Strony", bold: true })] })],
+            width: { size: 30, type: WidthType.PERCENTAGE }
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: url })] })],
+            width: { size: 70, type: WidthType.PERCENTAGE }
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "Data Skanowania", bold: true })] })],
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: currentDate })] })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "ID Skanowania", bold: true })] })],
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: `#${scanId}` })] })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "Łączne Naruszenia", bold: true })] })],
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: totalViolations.toString(), bold: true, color: "dc2626" })] })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "Zaliczone Testy", bold: true })] })],
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: passedTests.toString(), bold: true, color: "16a34a" })] })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "Przeskanowane Elementy", bold: true })] })],
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: elementsScanned.toString() })] })],
+          }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: "Wynik Zgodności", bold: true })] })],
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: `${complianceScore}%`, bold: true, color: "2563eb" })] })],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  children.push(summaryTable);
+
+  // Violations section
   if (totalViolations > 0) {
-    htmlContent += `
-    <div class="section">
-        <div class="section-title">Wykryte Naruszenia Dostępności</div>`;
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "WYKRYTE NARUSZENIA DOSTĘPNOŚCI",
+            bold: true,
+            size: 24,
+            color: "1e40af"
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      })
+    );
 
     scanResult.violations.forEach((violation: any, index: number) => {
-      const impactClass = `violation-${violation.impact}`;
-      const badgeClass = `impact-${violation.impact}`;
       const nodeCount = violation.nodes?.length || 0;
       const impactText = violation.impact === 'critical' ? 'KRYTYCZNY' : 
                         violation.impact === 'serious' ? 'POWAŻNY' :
                         violation.impact === 'moderate' ? 'UMIARKOWANY' : 'DROBNY';
       
-      htmlContent += `
-        <div class="violation ${impactClass}">
-            <div class="violation-title">${index + 1}. ${violation.help || 'Nieznane naruszenie'}</div>
-            <span class="violation-impact ${badgeClass}">${impactText}</span>
-            <p><strong>Opis:</strong> ${violation.description || 'Brak opisu'}</p>
-            <p><strong>Dotkniętych elementów:</strong> ${nodeCount}</p>
-            <p><strong>Znaczniki WCAG:</strong> ${violation.tags ? violation.tags.join(', ') : 'Brak'}</p>
-            ${violation.helpUrl ? `<p><strong>Więcej informacji:</strong> <a href="${violation.helpUrl}">${violation.helpUrl}</a></p>` : ''}
-        </div>`;
-    });
+      const impactColor = violation.impact === 'critical' ? 'dc2626' : 
+                         violation.impact === 'serious' ? 'ea580c' :
+                         violation.impact === 'moderate' ? 'd97706' : '65a30d';
 
-    htmlContent += `
-    </div>`;
+      // Violation title
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${index + 1}. ${violation.help || 'Nieznane naruszenie'}`,
+              bold: true,
+              size: 22,
+              color: "2563eb"
+            }),
+          ],
+          spacing: { before: 300, after: 100 }
+        })
+      );
+
+      // Impact level
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Poziom: ", bold: true }),
+            new TextRun({ 
+              text: impactText, 
+              bold: true, 
+              color: impactColor 
+            }),
+          ],
+          spacing: { after: 100 }
+        })
+      );
+
+      // Description
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Opis: ", bold: true }),
+            new TextRun({ text: violation.description || 'Brak opisu' }),
+          ],
+          spacing: { after: 100 }
+        })
+      );
+
+      // Affected elements
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Dotkniętych elementów: ", bold: true }),
+            new TextRun({ text: nodeCount.toString() }),
+          ],
+          spacing: { after: 100 }
+        })
+      );
+
+      // WCAG tags
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Znaczniki WCAG: ", bold: true }),
+            new TextRun({ text: violation.tags ? violation.tags.join(', ') : 'Brak' }),
+          ],
+          spacing: { after: 100 }
+        })
+      );
+
+      // Help URL
+      if (violation.helpUrl) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Więcej informacji: ", bold: true }),
+              new TextRun({ 
+                text: violation.helpUrl,
+                color: "2563eb",
+                underline: {}
+              }),
+            ],
+            spacing: { after: 200 }
+          })
+        );
+      }
+    });
   } else {
-    htmlContent += `
-    <div class="section">
-        <div class="section-title">Wyniki Skanowania</div>
-        <p style="color: #16a34a; font-size: 14pt; font-weight: bold;">✓ Świetna robota! Nie znaleziono problemów z dostępnością.</p>
-    </div>`;
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "WYNIKI SKANOWANIA",
+            bold: true,
+            size: 24,
+            color: "1e40af"
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "✓ Świetna robota! Nie znaleziono problemów z dostępnością.",
+            bold: true,
+            size: 22,
+            color: "16a34a"
+          }),
+        ],
+        spacing: { after: 200 }
+      })
+    );
   }
 
-  htmlContent += `
-    <div class="footer">
-        <p><strong>Raport wygenerowany przez Analizator Dostępności Web</strong> | ${currentDate}</p>
-        <p>Ten raport zawiera analizę zgodności z wytycznymi WCAG 2.1</p>
-    </div>
-</body>
-</html>`;
+  // Footer
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Raport wygenerowany przez Analizator Dostępności Web | ${currentDate}`,
+          size: 18,
+          color: "6b7280"
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 400, after: 100 }
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Ten raport zawiera analizę zgodności z wytycznymi WCAG 2.1",
+          size: 18,
+          color: "6b7280"
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 }
+    })
+  );
 
-  return htmlContent;
+  // Create document
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: children,
+      },
+    ],
+  });
+
+  // Generate buffer
+  const buffer = await Packer.toBuffer(doc);
+  return buffer;
 }
