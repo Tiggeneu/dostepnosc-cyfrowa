@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,12 +49,19 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
     enabled: !!currentScanId,
     refetchInterval: (data) => {
       // Stop polling when scan is complete or failed
-      if (data?.data?.status === 'completed' || data?.data?.status === 'failed') {
+      if (data?.status === 'completed' || data?.status === 'failed') {
         return false;
       }
       return 2000; // Poll every 2 seconds
     },
   }) as any;
+
+  // Show scan results when complete
+  useEffect(() => {
+    if (scanResult?.status === 'completed' && currentScanId) {
+      onScanInitiated(currentScanId);
+    }
+  }, [scanResult?.status, currentScanId, onScanInitiated]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
