@@ -45,20 +45,22 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
 
   // Poll scan status
   const { data: scanResult, isLoading: isScanLoading } = useQuery({
-    queryKey: ["/api/scan", currentScanId],
+    queryKey: [`/api/scan/${currentScanId}`],
     enabled: !!currentScanId,
-    refetchInterval: (data) => {
+    refetchInterval: (query) => {
       // Stop polling when scan is complete or failed
-      if (data?.status === 'completed' || data?.status === 'failed') {
+      if (query.state.data?.status === 'completed' || query.state.data?.status === 'failed') {
         return false;
       }
       return 2000; // Poll every 2 seconds
     },
-  }) as any;
+  });
 
   // Show scan results when complete
   useEffect(() => {
+    console.log('Scan result:', scanResult);
     if (scanResult?.status === 'completed' && currentScanId) {
+      console.log('Triggering scan completion for ID:', currentScanId);
       onScanInitiated(currentScanId);
     }
   }, [scanResult?.status, currentScanId, onScanInitiated]);

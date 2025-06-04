@@ -10,7 +10,7 @@ interface ViolationsListProps {
 
 export default function ViolationsList({ scanId }: ViolationsListProps) {
   const { data: scanResult } = useQuery({
-    queryKey: ["/api/scan", scanId],
+    queryKey: [`/api/scan/${scanId}`],
     enabled: !!scanId,
   });
 

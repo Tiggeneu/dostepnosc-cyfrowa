@@ -13,9 +13,9 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
   const { toast } = useToast();
 
   const { data: scanResult } = useQuery({
-    queryKey: ["/api/scan", scanId],
+    queryKey: [`/api/scan/${scanId}`],
     enabled: !!scanId,
-  }) as any;
+  });
 
   const exportMutation = useMutation({
     mutationFn: async (format: 'pdf' | 'json' | 'csv') => {
