@@ -1314,41 +1314,41 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
         {
           name: "1.1 Alternatywa tekstowa",
           criteria: [
-            { id: "1.1.1", name: "Treść nietekstowa" }
+            { id: "1.1.1", name: "Treść nietekstowa", level: "A" }
           ]
         },
         {
           name: "1.2 Multimedia",
           criteria: [
-            { id: "1.2.1", name: "Tylko audio lub tylko wideo (nagranie)" },
-            { id: "1.2.2", name: "Napisy rozszerzone (nagranie)" },
-            { id: "1.2.3", name: "Audiodeskrypcja lub alternatywa tekstowa dla mediów (nagranie)" },
-            { id: "1.2.4", name: "Napisy rozszerzone (na żywo)" },
-            { id: "1.2.5", name: "Audiodeskrypcja (nagranie)" }
+            { id: "1.2.1", name: "Tylko audio lub tylko wideo (nagranie)", level: "A" },
+            { id: "1.2.2", name: "Napisy rozszerzone (nagranie)", level: "A" },
+            { id: "1.2.3", name: "Audiodeskrypcja lub alternatywa tekstowa dla mediów (nagranie)", level: "A" },
+            { id: "1.2.4", name: "Napisy rozszerzone (na żywo)", level: "AA" },
+            { id: "1.2.5", name: "Audiodeskrypcja (nagranie)", level: "AA" }
           ]
         },
         {
           name: "1.3 Możliwość adaptacji",
           criteria: [
-            { id: "1.3.1", name: "Informacje i relacje" },
-            { id: "1.3.2", name: "Zrozumiała kolejność" },
-            { id: "1.3.3", name: "Właściwości zmysłowe" },
-            { id: "1.3.4", name: "Orientacja" },
-            { id: "1.3.5", name: "Określenie pożądanej wartości" }
+            { id: "1.3.1", name: "Informacje i relacje", level: "A" },
+            { id: "1.3.2", name: "Zrozumiała kolejność", level: "A" },
+            { id: "1.3.3", name: "Właściwości zmysłowe", level: "A" },
+            { id: "1.3.4", name: "Orientacja", level: "AA" },
+            { id: "1.3.5", name: "Określenie pożądanej wartości", level: "AA" }
           ]
         },
         {
           name: "1.4 Rozróżnialność",
           criteria: [
-            { id: "1.4.1", name: "Użycie koloru" },
-            { id: "1.4.2", name: "Kontrola odtwarzania dźwięku" },
-            { id: "1.4.3", name: "Kontrast (minimalny)" },
-            { id: "1.4.4", name: "Zmiana rozmiaru tekstu" },
-            { id: "1.4.5", name: "Obrazy tekstu" },
-            { id: "1.4.10", name: "Dopasowanie do ekranu" },
-            { id: "1.4.11", name: "Kontrast elementów nietekstowych" },
-            { id: "1.4.12", name: "Odstępy w tekście" },
-            { id: "1.4.13", name: "Treść spod kursora lub fokusu" }
+            { id: "1.4.1", name: "Użycie koloru", level: "A" },
+            { id: "1.4.2", name: "Kontrola odtwarzania dźwięku", level: "A" },
+            { id: "1.4.3", name: "Kontrast (minimalny)", level: "AA" },
+            { id: "1.4.4", name: "Zmiana rozmiaru tekstu", level: "AA" },
+            { id: "1.4.5", name: "Obrazy tekstu", level: "AA" },
+            { id: "1.4.10", name: "Dopasowanie do ekranu", level: "AA" },
+            { id: "1.4.11", name: "Kontrast elementów nietekstowych", level: "AA" },
+            { id: "1.4.12", name: "Odstępy w tekście", level: "AA" },
+            { id: "1.4.13", name: "Treść spod kursora lub fokusu", level: "AA" }
           ]
         }
       ]
@@ -1565,13 +1565,14 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
               children: [
                 new Paragraph({
                   children: [
-                    new TextRun({ text: `${criterion.id}: `, bold: true, size: 18 }),
-                    new TextRun({ text: criterion.name, size: 18 })
+                    new TextRun({ text: `${criterion.id}: `, bold: true, size: 18, font: "Calibri" }),
+                    new TextRun({ text: criterion.name, size: 18, font: "Calibri" }),
+                    new TextRun({ text: ` (${criterion.level || 'A'})`, size: 16, font: "Calibri", color: "6b7280" })
                   ],
                   spacing: { before: 100, after: 100 }
                 })
               ],
-              width: { size: 60, type: WidthType.PERCENTAGE },
+              width: { size: 55, type: WidthType.PERCENTAGE },
               margins: { top: 100, bottom: 100, left: 150, right: 150 }
             }),
             new TableCell({

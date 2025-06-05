@@ -67,6 +67,22 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
     return wcagTag ? wcagTag.replace('wcag', 'WCAG ').toUpperCase() : 'WCAG';
   };
 
+  const getWcagLevel = (tags: string[]) => {
+    if (tags.some(tag => tag.includes('wcag2aaa'))) return 'AAA';
+    if (tags.some(tag => tag.includes('wcag2aa'))) return 'AA';
+    if (tags.some(tag => tag.includes('wcag2a'))) return 'A';
+    return 'A'; // domyślnie poziom A
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'A': return 'bg-green-100 text-green-800';
+      case 'AA': return 'bg-orange-100 text-orange-800';
+      case 'AAA': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="report-section mt-8">
       <h3 className="text-xl font-bold mb-6">Naruszenia Dostępności</h3>
@@ -87,9 +103,14 @@ export default function ViolationsList({ scanId }: ViolationsListProps) {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h5 className="text-lg font-semibold mb-2">{violation.help}</h5>
-                <Badge className={`${getSeverityBadgeColor(violation.impact)} text-xs font-semibold`}>
-                  {translateImpact(violation.impact)}
-                </Badge>
+                <div className="flex gap-2 mb-2">
+                  <Badge className={`${getSeverityBadgeColor(violation.impact)} text-xs font-semibold`}>
+                    {translateImpact(violation.impact)}
+                  </Badge>
+                  <Badge className={`${getLevelColor(getWcagLevel(violation.tags))} text-xs font-semibold`}>
+                    WCAG {getWcagLevel(violation.tags)}
+                  </Badge>
+                </div>
               </div>
               <div className="text-right">
                 <div className="font-semibold text-gray-900">
