@@ -61,13 +61,7 @@ export default function Navbar() {
                         </div>
                       </div>
                       
-                      <div className="flex items-start">
-                        <Settings className="h-4 w-4 text-orange-500 mt-0.5 mr-3 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium text-sm">Backup Systemy</div>
-                          <div className="text-xs text-gray-500">Fallback gdy Puppeteer niedostępny</div>
-                        </div>
-                      </div>
+
                     </div>
                     
                     <div className="mt-4 pt-3 border-t">
