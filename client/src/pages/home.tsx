@@ -91,10 +91,7 @@ export default function Home() {
                 Technologie: axe-core • Puppeteer • pa11y • html-validate • Lighthouse • React • Node.js
               </p>
             </div>
-            <div className="flex space-x-6">
-              <a href="#" className="text-gray-600 hover:text-gray-800 text-sm">Dokumentacja WCAG</a>
-              <a href="#" className="text-gray-600 hover:text-gray-800 text-sm">Wsparcie</a>
-            </div>
+
           </div>
         </div>
       </footer>
