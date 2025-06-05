@@ -1230,6 +1230,122 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
 
   children.push(scopeTable);
 
+  // Add legal basis section after scope table
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "PODSTAWY PRAWNE",
+          bold: true,
+          size: 28
+        }),
+      ],
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 600, after: 300 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Ustawa z dnia 4 kwietnia 2019 r. o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych",
+          bold: true,
+          size: 22
+        }),
+      ],
+      spacing: { before: 200, after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Art. 7. 1. Podmiot publiczny zapewnia dostępność cyfrową swojej strony internetowej lub aplikacji mobilnej zgodnie z wymaganiami określonymi w załączniku do niniejszej ustawy.",
+          size: 20
+        }),
+      ],
+      spacing: { after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Rozporządzenie Rady Ministrów z dnia 12 kwietnia 2019 r. w sprawie Krajowych Ram Interoperacyjności, minimalnych wymagań dla rejestrów publicznych i wymiany informacji w postaci elektronicznej oraz minimalnych wymagań dla systemów teleinformatycznych",
+          bold: true,
+          size: 22
+        }),
+      ],
+      spacing: { before: 200, after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "§ 19. 1. Strony internetowe podmiotów publicznych spełniają wymagania dostępności cyfrowej określone w załączniku nr 4 do rozporządzenia, zgodne ze standardem WCAG 2.1 na poziomie AA.",
+          size: 20
+        }),
+      ],
+      spacing: { after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Dyrektywa Parlamentu Europejskiego i Rady (UE) 2016/2102 z dnia 26 października 2016 r. w sprawie dostępności stron internetowych i aplikacji mobilnych organów sektora publicznego",
+          bold: true,
+          size: 22
+        }),
+      ],
+      spacing: { before: 200, after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Art. 4. Państwa członkowskie zapewniają, aby strony internetowe organów sektora publicznego spełniały wymogi dostępności określone w załączniku I.",
+          size: 20
+        }),
+      ],
+      spacing: { after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Europejska Norma EN 301 549 V3.2.1",
+          bold: true,
+          size: 22
+        }),
+      ],
+      spacing: { before: 200, after: 100 }
+    })
+  );
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "Niniejsza europejska norma określa funkcjonalne wymagania dostępności mające zastosowanie do produktów i usług technologii informacyjno-komunikacyjnych (TIK), wraz z opisem procedur testowych i metodologii oceny mających zastosowanie do tych wymagań.",
+          size: 20
+        }),
+      ],
+      spacing: { after: 400 }
+    })
+  );
+
   // Szczegółowe wyniki audytu
   children.push(
     new Paragraph({
@@ -2558,122 +2674,6 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
       );
     }
   }
-
-  // Add legal basis section
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "PODSTAWY PRAWNE",
-          bold: true,
-          size: 28
-        }),
-      ],
-      heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 600, after: 300 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Ustawa z dnia 4 kwietnia 2019 r. o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych",
-          bold: true,
-          size: 22
-        }),
-      ],
-      spacing: { before: 200, after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Art. 7. 1. Podmiot publiczny zapewnia dostępność cyfrową swojej strony internetowej lub aplikacji mobilnej zgodnie z wymaganiami określonymi w załączniku do niniejszej ustawy.",
-          size: 20
-        }),
-      ],
-      spacing: { after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Rozporządzenie Rady Ministrów z dnia 12 kwietnia 2019 r. w sprawie Krajowych Ram Interoperacyjności, minimalnych wymagań dla rejestrów publicznych i wymiany informacji w postaci elektronicznej oraz minimalnych wymagań dla systemów teleinformatycznych",
-          bold: true,
-          size: 22
-        }),
-      ],
-      spacing: { before: 200, after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "§ 19. 1. Strony internetowe podmiotów publicznych spełniają wymagania dostępności cyfrowej określone w załączniku nr 4 do rozporządzenia, zgodne ze standardem WCAG 2.1 na poziomie AA.",
-          size: 20
-        }),
-      ],
-      spacing: { after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Dyrektywa Parlamentu Europejskiego i Rady (UE) 2016/2102 z dnia 26 października 2016 r. w sprawie dostępności stron internetowych i aplikacji mobilnych organów sektora publicznego",
-          bold: true,
-          size: 22
-        }),
-      ],
-      spacing: { before: 200, after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Art. 4. Państwa członkowskie zapewniają, aby strony internetowe organów sektora publicznego spełniały wymogi dostępności określone w załączniku I.",
-          size: 20
-        }),
-      ],
-      spacing: { after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Europejska Norma EN 301 549 V3.2.1",
-          bold: true,
-          size: 22
-        }),
-      ],
-      spacing: { before: 200, after: 100 }
-    })
-  );
-
-  children.push(
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: "Niniejsza europejska norma określa funkcjonalne wymagania dostępności mające zastosowanie do produktów i usług technologii informacyjno-komunikacyjnych (TIK), wraz z opisem procedur testowych i metodologii oceny mających zastosowanie do tych wymagań.",
-          size: 20
-        }),
-      ],
-      spacing: { after: 300 }
-    })
-  );
 
   // Create document with default font settings
   const doc = new Document({
