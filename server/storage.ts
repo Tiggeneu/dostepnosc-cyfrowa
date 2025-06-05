@@ -1,10 +1,34 @@
-import { scanResults, type ScanResult, type InsertScanResult } from "@shared/schema";
+import { 
+  scanResults, auditSessions, wcagCriteria, criteriaScreenshots,
+  type ScanResult, type InsertScanResult,
+  type AuditSession, type InsertAuditSession,
+  type WcagCriteria, type InsertWcagCriteria,
+  type CriteriaScreenshot, type InsertCriteriaScreenshot
+} from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   createScanResult(scanResult: InsertScanResult): Promise<ScanResult>;
   getScanResult(id: number): Promise<ScanResult | undefined>;
   updateScanResult(id: number, updates: Partial<InsertScanResult>): Promise<ScanResult | undefined>;
   getAllScanResults(): Promise<ScanResult[]>;
+  
+  // Manual audit methods
+  createAuditSession(auditSession: InsertAuditSession): Promise<AuditSession>;
+  getAuditSession(id: number): Promise<AuditSession | undefined>;
+  getAuditSessionByScanId(scanId: number): Promise<AuditSession | undefined>;
+  updateAuditSession(id: number, updates: Partial<InsertAuditSession>): Promise<AuditSession | undefined>;
+  
+  // WCAG criteria methods
+  createWcagCriteria(criteria: InsertWcagCriteria): Promise<WcagCriteria>;
+  getWcagCriteriaBySession(auditSessionId: number): Promise<WcagCriteria[]>;
+  updateWcagCriteria(id: number, updates: Partial<InsertWcagCriteria>): Promise<WcagCriteria | undefined>;
+  
+  // Screenshot methods
+  createScreenshot(screenshot: InsertCriteriaScreenshot): Promise<CriteriaScreenshot>;
+  getScreenshotsByCriteria(criteriaId: number): Promise<CriteriaScreenshot[]>;
+  deleteScreenshot(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {

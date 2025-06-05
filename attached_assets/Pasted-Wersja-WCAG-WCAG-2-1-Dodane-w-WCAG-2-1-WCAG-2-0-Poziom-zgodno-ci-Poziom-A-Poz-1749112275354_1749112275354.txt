@@ -1,0 +1,185 @@
+Wersja WCAG
+
+    WCAG 2.1
+    Dodane w WCAG 2.1
+    WCAG 2.0
+
+Poziom zgodności
+
+    Poziom A
+    Poziom AA
+
+Oceniana próbka
+
+    Reprezentuje układ główny, nawigację i strukturę strony.
+
+Testowanie dynamicznych treści oraz dat publikacji.
+Testowanie danych kontaktowych.
+
+    Wybierz wszystkie
+
+1 Postrzegalność
+1.1 Alternatywa tekstowa
+1.1.1: Treść nietekstowa Level A
+Objaśnienie 1.1.1
+Jak spełnić kryterium 1.1.1
+
+Wszelkie treści nietekstowe przedstawione użytkownikowi posiadają swoją tekstową alternatywę, która pełni tę samą funkcję, z wyjątkiem sytuacji opisanych poniżej.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.2 Multimedia
+1.2.1: Tylko audio lub tylko wideo (nagranie) Level A
+Objaśnienie 1.2.1
+Jak spełnić kryterium 1.2.1
+
+Dla mediów nagranych w systemie tylko audio lub tylko wideo stosuje się następujące zasady, z wyjątkiem sytuacji, kiedy nagranie audio lub wideo jest alternatywą dla tekstu i w taki sposób jest oznaczone:
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.2.2: Napisy rozszerzone (nagranie) Level A
+Objaśnienie 1.2.2
+Jak spełnić kryterium 1.2.2
+
+Do wszystkich nagrań audio w multimediach zsynchronizowanych (dźwięk i obraz), z wyjątkiem sytuacji, kiedy są one alternatywami dla tekstu i w taki sposób są oznaczone, zapewnione są napisy rozszerzone.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.2.3: Audiodeskrypcja lub alternatywa tekstowa dla mediów (nagranie) Level A
+Objaśnienie 1.2.3
+Jak spełnić kryterium 1.2.3
+
+Zapewniona jest alternatywa dla multimediów lub audiodeskrypcja dla nagrań wideo w multimediach zsynchronizowanych (dźwięk i obraz), z wyjątkiem sytuacji, kiedy są one alternatywami dla tekstu i w taki sposób są oznaczone.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.2.4: Napisy rozszerzone (na żywo) Level AA
+Objaśnienie 1.2.4
+Jak spełnić kryterium 1.2.4
+
+Do wszystkich treści audio w multimediach zsynchronizowanych (dźwięk i obraz) przekazywanych na żywo zapewnione są napisy rozszerzone.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.2.5: Audiodeskrypcja (nagranie) Level AA
+Objaśnienie 1.2.5
+Jak spełnić kryterium 1.2.5
+
+Zapewniona jest audiodeskrypcja dla wszystkich nagrań wideo w multimediach zsynchronizowanych.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.3 Możliwość adaptacji
+1.3.1: Informacje i relacje Level A
+Objaśnienie 1.3.1
+Jak spełnić kryterium 1.3.1
+
+Informacje, struktura oraz relacje między treściami przekazywane poprzez prezentację mogą być odczytane przez program komputerowy lub istnieją w postaci tekstu.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.3.2: Zrozumiała kolejność Level A
+Objaśnienie 1.3.2
+Jak spełnić kryterium 1.3.2
+
+Jeśli kolejność, w jakiej przedstawiona jest treść, ma znaczenie dla zrozumienia treści — prawidłowa kolejność odczytu musi być określona programowo.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.3.3: Właściwości zmysłowe Level A
+Objaśnienie 1.3.3
+Jak spełnić kryterium 1.3.3
+
+Instrukcje co do zrozumienia i operowania treścią nie opierają się wyłącznie na właściwościach zmysłowych, takich jak: kształt, rozmiar, wzrokowa lokalizacja, orientacja w przestrzeni lub dźwięk.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.3.4: Orientacja Level AA
+Objaśnienie 1.3.4
+Jak spełnić kryterium 1.3.4
+
+Treść nie ogranicza swojego widoku i działania do jednej orientacji wyświetlania, takiej jak pionowa lub pozioma, chyba że określona orientacja wyświetlania jest istotna.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.3.5: Określenie pożądanej wartości Level AA
+Objaśnienie 1.3.5
+Jak spełnić kryterium 1.3.5
+
+Cel każdego pola zbierającego informacje o użytkowniku może być programowo określony, gdy:
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4 Rozróżnialność
+1.4.1: Użycie koloru Level A
+Objaśnienie 1.4.1
+Jak spełnić kryterium 1.4.1
+
+Kolor nie jest wykorzystywany jako jedyny wizualny sposób przekazywania informacji, wskazywania czynności do wykonania lub oczekiwania na odpowiedź, czy też wyróżniania elementów wizualnych.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4.2: Kontrola odtwarzania dźwięku Level A
+Objaśnienie 1.4.2
+Jak spełnić kryterium 1.4.2
+
+Jeśli jakieś nagranie audio włącza się automatycznie na danej stronie i jest odtwarzane przez okres dłuższy niż 3 sekundy, istnieje mechanizm umożliwiający przerwanie lub wyłączenie nagrania albo mechanizm kontrolujący poziom głośności niezależnie od poziomu głośności całego systemu.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4.3: Kontrast (minimalny) Level AA
+Objaśnienie 1.4.3
+Jak spełnić kryterium 1.4.3
+
+Wizualna prezentacja tekstu lub obrazu tekstu posiada współczynnik kontrastu wynoszący przynajmniej 4.5:1, poza następującymi wyjątkami:
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4.4: Zmiana rozmiaru tekstu Level AA
+Objaśnienie 1.4.4
+Jak spełnić kryterium 1.4.4
+
+Oprócz napisów rozszerzonych oraz obrazów tekstu, rozmiar tekstu może zostać powiększony do 200% bez użycia technologii wspomagających oraz bez utraty treści lub funkcjonalności.
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4.5: Obrazy tekstu Level AA
+Objaśnienie 1.4.5
+Jak spełnić kryterium 1.4.5
+
+Jeśli wykorzystywane technologie mogą przedstawiać treść wizualnie, do przekazywania informacji wykorzystuje się tekst, a nie obraz tekstu, z wyjątkiem następujących sytuacji:
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4.10: Dopasowanie do ekranu Level AA
+Objaśnienie 1.4.10
+Jak spełnić kryterium 1.4.10
+
+Treść może być prezentowana bez utraty informacji lub funkcjonalności, bez konieczności przewijania w dwóch wymiarach dla:
+Wyniki dla całej próbki
+Wynik:
+Pokaż w raporcie
+Obserwacje:
+1.4.11: Kontrast elementów nietekstowych Level AA
+Objaśnienie 1.4.11
+Jak spełnić kryterium 1.4.11
+
+Wizualna prezentacja następujących elementów ma współczynnik kontrastu co najmniej 3:1 względem sąsiednich kolorów:
+Wyniki dla całej próbki
+Wynik:
