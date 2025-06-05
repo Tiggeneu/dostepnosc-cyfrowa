@@ -84,7 +84,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p className="text-gray-600 mb-1">
-              © 2024 Analizator Dostępności Web - Testowanie zgodności WCAG 2.1
+              © 2025 Analizator Dostępności Web - Testowanie zgodności WCAG 2.1
             </p>
             <p className="text-sm text-gray-500">
               Technologie: axe-core • Puppeteer • pa11y • html-validate • Lighthouse • React • Node.js
