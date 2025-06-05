@@ -2412,11 +2412,11 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
                 new TextRun({
                   text: "Uwagi audytora: ",
                   bold: true,
-                  size: 18
+                  size: 22
                 }),
                 new TextRun({
                   text: criterion.notes,
-                  size: 18
+                  size: 22
                 }),
               ],
               spacing: { after: 100 }
@@ -2460,7 +2460,7 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
                   children: [
                     new TextRun({
                       text: screenshot.description,
-                      size: 14,
+                      size: 20,
                       italics: true
                     }),
                   ],
@@ -2472,7 +2472,13 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
             // Add the actual image if fileData exists
             if (screenshot.fileData) {
               try {
-                const imageBuffer = Buffer.from(screenshot.fileData, 'base64');
+                // Remove data URL prefix if present (data:image/png;base64,)
+                let base64Data = screenshot.fileData;
+                if (base64Data.startsWith('data:')) {
+                  base64Data = base64Data.split(',')[1];
+                }
+                
+                const imageBuffer = Buffer.from(base64Data, 'base64');
                 
                 children.push(
                   new Paragraph({
@@ -2480,10 +2486,9 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
                       new ImageRun({
                         data: imageBuffer,
                         transformation: {
-                          width: 400,
-                          height: 300,
+                          width: 500,
+                          height: 375,
                         },
-                        type: "png"
                       }),
                     ],
                     alignment: AlignmentType.CENTER,
@@ -2491,13 +2496,14 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
                   })
                 );
               } catch (error) {
+                console.error('Error processing image:', error);
                 // If image processing fails, show placeholder text
                 children.push(
                   new Paragraph({
                     children: [
                       new TextRun({
                         text: `[Obraz niedostępny: ${screenshot.originalName}]`,
-                        size: 14,
+                        size: 20,
                         color: "999999",
                         italics: true
                       }),
@@ -2512,7 +2518,7 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
                   children: [
                     new TextRun({
                       text: `[Plik załączony: ${screenshot.originalName}]`,
-                      size: 14,
+                      size: 20,
                       color: "666666",
                       italics: true
                     }),
