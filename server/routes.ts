@@ -2232,7 +2232,7 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
       new Paragraph({
         children: [
           new TextRun({
-            text: `Data audytu: ${new Date(auditData.session.startedAt).toLocaleDateString('pl-PL')}`,
+            text: `Data audytu: ${new Date().toLocaleDateString('pl-PL')}`,
             size: 20
           }),
         ],
@@ -2362,7 +2362,7 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
     );
 
     if (evaluatedCriteria.length > 0) {
-      evaluatedCriteria.forEach((criterion: any) => {
+      for (const criterion of evaluatedCriteria) {
         const statusText = criterion.status === 'passed' ? 'SPEŁNIONE' : 'NIESPEŁNIONE';
         const statusColor = criterion.status === 'passed' ? '16a34a' : 'dc2626';
 
@@ -2399,11 +2399,64 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
                   size: 18
                 }),
               ],
-              spacing: { after: 200 }
+              spacing: { after: 100 }
             })
           );
         }
-      });
+
+        // Add screenshots for this criterion
+        try {
+          const screenshots = await storage.getScreenshotsByCriteria(criterion.id);
+          if (screenshots && screenshots.length > 0) {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Załączone zrzuty ekranu:",
+                    bold: true,
+                    size: 18
+                  }),
+                ],
+                spacing: { before: 100, after: 50 }
+              })
+            );
+
+            screenshots.forEach((screenshot, index) => {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `• ${screenshot.originalName}`,
+                      size: 16
+                    }),
+                    screenshot.description ? new TextRun({
+                      text: ` - ${screenshot.description}`,
+                      size: 16,
+                      italics: true
+                    }) : new TextRun({ text: "" }),
+                  ],
+                  spacing: { after: 25 }
+                })
+              );
+            });
+
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Liczba załączonych plików: ${screenshots.length}`,
+                    size: 14,
+                    color: "6b7280"
+                  }),
+                ],
+                spacing: { after: 150 }
+              })
+            );
+          }
+        } catch (error) {
+          // Continue without screenshots if there's an error
+        }
+      }
     } else {
       children.push(
         new Paragraph({
