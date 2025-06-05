@@ -30,14 +30,14 @@ export default function ScanForm({ onScanInitiated }: ScanFormProps) {
       setCurrentScanId(data.scanId);
       onScanInitiated(data.scanId);
       toast({
-        title: "Scan Started",
-        description: "Your accessibility scan has been initiated.",
+        title: "Skanowanie rozpoczęte",
+        description: "Analiza dostępności została uruchomiona.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Scan Failed",
-        description: error.message || "Failed to start the accessibility scan.",
+        title: "Błąd skanowania",
+        description: error.message || "Nie udało się uruchomić analizy dostępności.",
         variant: "destructive",
       });
     },
