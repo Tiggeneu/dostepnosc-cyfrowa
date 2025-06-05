@@ -28,10 +28,10 @@ export default function Navbar() {
                     <div className="mb-4">
                       <h3 className="text-lg font-bold text-gray-900 mb-2">Możliwości Programu</h3>
                       <div className="flex items-center mb-3">
-                        <div className="bg-green-100 rounded-full px-3 py-1 mr-3">
-                          <span className="text-sm font-bold text-green-700">95% dokładność</span>
+                        <div className="bg-blue-100 rounded-full px-3 py-1 mr-3">
+                          <span className="text-sm font-bold text-blue-700">WCAG 2.1</span>
                         </div>
-                        <div className="text-sm text-gray-600">WCAG 2.1 A/AA/AAA</div>
+                        <div className="text-sm text-gray-600">Poziomy A/AA/AAA</div>
                       </div>
                     </div>
                     
