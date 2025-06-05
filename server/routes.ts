@@ -473,7 +473,7 @@ function validateHTMLStructure(html: string): any[] {
   if (!html.includes('lang=')) {
     violations.push({
       id: "html-has-lang",
-      impact: "serious",
+      impact: "critical",
       tags: ["wcag2a", "wcag311"],
       description: "Element <html> musi mieć atrybut lang",
       help: "Dodaj atrybut lang do elementu <html>",
@@ -490,7 +490,7 @@ function validateHTMLStructure(html: string): any[] {
   if (!html.includes('<title>') || html.includes('<title></title>')) {
     violations.push({
       id: "document-title",
-      impact: "serious",
+      impact: "critical",
       tags: ["wcag2a", "wcag242"],
       description: "Strona musi mieć tytuł opisujący jej temat lub cel",
       help: "Dodaj opisowy tytuł do elementu <title>",
@@ -542,7 +542,7 @@ function validateSemanticHTML(html: string): any[] {
   if (!hasH1 && headingMatches.length > 0) {
     violations.push({
       id: "page-has-heading-one",
-      impact: "moderate",
+      impact: "critical",
       tags: ["wcag2a"],
       description: "Strona powinna mieć nagłówek pierwszego poziomu",
       help: "Dodaj nagłówek h1 na stronie",
