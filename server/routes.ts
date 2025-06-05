@@ -94,6 +94,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         }
         
+        // Pre-fetch screenshots if audit data exists
+        if (auditData && auditData.criteria) {
+          const evaluatedCriteria = auditData.criteria.filter((c: any) => 
+            c.status === 'passed' || c.status === 'failed'
+          );
+          
+          const criteriaWithScreenshots = await Promise.all(
+            evaluatedCriteria.map(async (criterion: any) => {
+              try {
+                const screenshots = await storage.getScreenshotsByCriteria(criterion.id);
+                return { ...criterion, screenshots: screenshots || [] };
+              } catch (error) {
+                return { ...criterion, screenshots: [] };
+              }
+            })
+          );
+          
+          (auditData as any).criteriaWithScreenshots = criteriaWithScreenshots;
+        }
+
         const docxBuffer = await generateWordReport(scanResult, scanId, auditData);
         
         // Extract domain from URL for filename
@@ -2356,13 +2376,12 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
       })
     );
 
-    // Display criteria that were evaluated (passed or failed)
-    const evaluatedCriteria = auditData.criteria.filter((c: any) => 
-      c.status === 'passed' || c.status === 'failed'
-    );
+    // Use pre-fetched criteria with screenshots if available
+    const evaluatedCriteria = (auditData as any).criteriaWithScreenshots || 
+      auditData.criteria.filter((c: any) => c.status === 'passed' || c.status === 'failed');
 
     if (evaluatedCriteria.length > 0) {
-      for (const criterion of evaluatedCriteria) {
+      evaluatedCriteria.forEach((criterion: any) => {
         const statusText = criterion.status === 'passed' ? 'SPEŁNIONE' : 'NIESPEŁNIONE';
         const statusColor = criterion.status === 'passed' ? '16a34a' : 'dc2626';
 
@@ -2405,58 +2424,53 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
         }
 
         // Add screenshots for this criterion
-        try {
-          const screenshots = await storage.getScreenshotsByCriteria(criterion.id);
-          if (screenshots && screenshots.length > 0) {
+        if (criterion.screenshots && criterion.screenshots.length > 0) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Załączone zrzuty ekranu:",
+                  bold: true,
+                  size: 18
+                }),
+              ],
+              spacing: { before: 100, after: 50 }
+            })
+          );
+
+          criterion.screenshots.forEach((screenshot: any) => {
             children.push(
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: "Załączone zrzuty ekranu:",
-                    bold: true,
-                    size: 18
+                    text: `• ${screenshot.originalName}`,
+                    size: 16
                   }),
+                  screenshot.description ? new TextRun({
+                    text: ` - ${screenshot.description}`,
+                    size: 16,
+                    italics: true
+                  }) : new TextRun({ text: "" }),
                 ],
-                spacing: { before: 100, after: 50 }
+                spacing: { after: 25 }
               })
             );
+          });
 
-            screenshots.forEach((screenshot, index) => {
-              children.push(
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: `• ${screenshot.originalName}`,
-                      size: 16
-                    }),
-                    screenshot.description ? new TextRun({
-                      text: ` - ${screenshot.description}`,
-                      size: 16,
-                      italics: true
-                    }) : new TextRun({ text: "" }),
-                  ],
-                  spacing: { after: 25 }
-                })
-              );
-            });
-
-            children.push(
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `Liczba załączonych plików: ${screenshots.length}`,
-                    size: 14,
-                    color: "6b7280"
-                  }),
-                ],
-                spacing: { after: 150 }
-              })
-            );
-          }
-        } catch (error) {
-          // Continue without screenshots if there's an error
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Liczba załączonych plików: ${criterion.screenshots.length}`,
+                  size: 14,
+                  color: "6b7280"
+                }),
+              ],
+              spacing: { after: 150 }
+            })
+          );
         }
-      }
+      });
     } else {
       children.push(
         new Paragraph({
