@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Download, Code, FileSpreadsheet } from "lucide-react";
+import { FileText, Download, Code, FileSpreadsheet, ClipboardCheck } from "lucide-react";
+import { Link } from "wouter";
 
 interface ReportOverviewProps {
   scanId: number;
@@ -92,7 +93,7 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             <span className="ml-1">{new Date(scanResult.scanDate).toLocaleString('pl-PL')}</span>
           </p>
         </div>
-        <div className="flex justify-center mt-4 md:mt-0">
+        <div className="flex gap-3 mt-4 md:mt-0">
           <Button
             variant="default"
             size="lg"
@@ -103,6 +104,17 @@ export default function ReportOverview({ scanId }: ReportOverviewProps) {
             <FileText className="w-5 h-5 mr-3" />
             Pobierz Raport Word
           </Button>
+          
+          <Link href={`/audit/${scanId}`}>
+            <Button
+              variant="outline"
+              size="lg"
+              className="px-8 py-3"
+            >
+              <ClipboardCheck className="w-5 h-5 mr-3" />
+              Audyt Manualny
+            </Button>
+          </Link>
         </div>
       </div>
 

@@ -109,8 +109,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual audit endpoints
+  app.post("/api/audit/start", async (req: Request, res: Response) => {
+    try {
+      const { scanId, auditorName } = req.body;
+      
+      // Check if scan exists
+      const scanResult = await storage.getScanResult(scanId);
+      if (!scanResult) {
+        return res.status(404).json({ message: "Skanowanie nie zostało znalezione" });
+      }
+
+      // Check if audit session already exists
+      const existingSession = await storage.getAuditSessionByScanId(scanId);
+      if (existingSession) {
+        return res.json(existingSession);
+      }
+
+      // Create new audit session
+      const auditSession = await storage.createAuditSession({
+        scanId,
+        auditorName,
+      });
+
+      // Initialize WCAG criteria for this session
+      await initializeWcagCriteria(auditSession.id, scanResult.wcagLevel);
+
+      res.json(auditSession);
+    } catch (error) {
+      console.error("Error starting audit:", error);
+      res.status(500).json({ message: "Błąd podczas rozpoczynania audytu" });
+    }
+  });
+
+  app.get("/api/audit/:sessionId", async (req: Request, res: Response) => {
+    try {
+      const sessionId = parseInt(req.params.sessionId);
+      const session = await storage.getAuditSession(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Sesja audytu nie została znaleziona" });
+      }
+
+      const criteria = await storage.getWcagCriteriaBySession(sessionId);
+      
+      res.json({
+        ...session,
+        criteria
+      });
+    } catch (error) {
+      console.error("Error getting audit session:", error);
+      res.status(500).json({ message: "Błąd podczas pobierania sesji audytu" });
+    }
+  });
+
+  app.put("/api/audit/criteria/:criteriaId", async (req: Request, res: Response) => {
+    try {
+      const criteriaId = parseInt(req.params.criteriaId);
+      const { status, notes } = req.body;
+      
+      const updatedCriteria = await storage.updateWcagCriteria(criteriaId, {
+        status,
+        notes
+      });
+
+      if (!updatedCriteria) {
+        return res.status(404).json({ message: "Kryterium nie zostało znalezione" });
+      }
+
+      res.json(updatedCriteria);
+    } catch (error) {
+      console.error("Error updating criteria:", error);
+      res.status(500).json({ message: "Błąd podczas aktualizacji kryterium" });
+    }
+  });
+
+  app.post("/api/audit/criteria/:criteriaId/screenshot", async (req: Request, res: Response) => {
+    try {
+      const criteriaId = parseInt(req.params.criteriaId);
+      const { filename, originalName, description } = req.body;
+      
+      const screenshot = await storage.createScreenshot({
+        criteriaId,
+        filename,
+        originalName,
+        description
+      });
+
+      res.json(screenshot);
+    } catch (error) {
+      console.error("Error uploading screenshot:", error);
+      res.status(500).json({ message: "Błąd podczas przesyłania zrzutu ekranu" });
+    }
+  });
+
+  app.get("/api/audit/criteria/:criteriaId/screenshots", async (req: Request, res: Response) => {
+    try {
+      const criteriaId = parseInt(req.params.criteriaId);
+      const screenshots = await storage.getScreenshotsByCriteria(criteriaId);
+      res.json(screenshots);
+    } catch (error) {
+      console.error("Error getting screenshots:", error);
+      res.status(500).json({ message: "Błąd podczas pobierania zrzutów ekranu" });
+    }
+  });
+
+  app.delete("/api/audit/screenshot/:screenshotId", async (req: Request, res: Response) => {
+    try {
+      const screenshotId = parseInt(req.params.screenshotId);
+      const deleted = await storage.deleteScreenshot(screenshotId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Zrzut ekranu nie został znaleziony" });
+      }
+
+      res.json({ message: "Zrzut ekranu został usunięty" });
+    } catch (error) {
+      console.error("Error deleting screenshot:", error);
+      res.status(500).json({ message: "Błąd podczas usuwania zrzutu ekranu" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Initialize WCAG criteria for audit session
+async function initializeWcagCriteria(auditSessionId: number, wcagLevel: 'A' | 'AA' | 'AAA') {
+  const criteria = getWcagCriteriaDefinitions(wcagLevel);
+  
+  for (const criterion of criteria) {
+    await storage.createWcagCriteria({
+      auditSessionId,
+      criteriaId: criterion.id,
+      title: criterion.title,
+      level: criterion.level,
+    });
+  }
+}
+
+// Get WCAG criteria definitions based on level
+function getWcagCriteriaDefinitions(wcagLevel: 'A' | 'AA' | 'AAA') {
+  const allCriteria = [
+    // Level A criteria
+    { id: "1.1.1", title: "Treść nietekstowa", level: "A" as const, section: "1.1 Alternatywa tekstowa" },
+    { id: "1.2.1", title: "Tylko audio lub tylko wideo (nagranie)", level: "A" as const, section: "1.2 Multimedia" },
+    { id: "1.2.2", title: "Napisy rozszerzone (nagranie)", level: "A" as const, section: "1.2 Multimedia" },
+    { id: "1.2.3", title: "Audiodeskrypcja lub alternatywa tekstowa dla mediów (nagranie)", level: "A" as const, section: "1.2 Multimedia" },
+    { id: "1.3.1", title: "Informacje i relacje", level: "A" as const, section: "1.3 Możliwość adaptacji" },
+    { id: "1.3.2", title: "Zrozumiała kolejność", level: "A" as const, section: "1.3 Możliwość adaptacji" },
+    { id: "1.3.3", title: "Właściwości zmysłowe", level: "A" as const, section: "1.3 Możliwość adaptacji" },
+    { id: "1.4.1", title: "Użycie koloru", level: "A" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.2", title: "Kontrola odtwarzania dźwięku", level: "A" as const, section: "1.4 Rozróżnialność" },
+    { id: "2.1.1", title: "Klawiatura", level: "A" as const, section: "2.1 Dostępność z klawiatury" },
+    { id: "2.1.2", title: "Brak pułapki klawiatury", level: "A" as const, section: "2.1 Dostępność z klawiatury" },
+    { id: "2.2.1", title: "Możliwość dostosowania czasu", level: "A" as const, section: "2.2 Wystarczająco dużo czasu" },
+    { id: "2.2.2", title: "Pauza, zatrzymanie, ukrycie", level: "A" as const, section: "2.2 Wystarczająco dużo czasu" },
+    { id: "2.3.1", title: "Trzy błyski lub wartości poniżej progu", level: "A" as const, section: "2.3 Ataki padaczkowe i reakcje fizyczne" },
+    { id: "2.4.1", title: "Pominięcie bloków", level: "A" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "2.4.2", title: "Tytuł strony", level: "A" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "2.4.3", title: "Kolejność fokusa", level: "A" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "2.4.4", title: "Cel linku (w kontekście)", level: "A" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "3.1.1", title: "Język strony", level: "A" as const, section: "3.1 Czytelność" },
+    { id: "3.2.1", title: "Po ustawieniu fokusa", level: "A" as const, section: "3.2 Przewidywalność" },
+    { id: "3.2.2", title: "Podczas wprowadzania danych", level: "A" as const, section: "3.2 Przewidywalność" },
+    { id: "3.3.1", title: "Identyfikacja błędu", level: "A" as const, section: "3.3 Pomoc w wprowadzaniu danych" },
+    { id: "3.3.2", title: "Etykiety lub instrukcje", level: "A" as const, section: "3.3 Pomoc w wprowadzaniu danych" },
+    { id: "4.1.1", title: "Parsowanie", level: "A" as const, section: "4.1 Zgodność" },
+    { id: "4.1.2", title: "Nazwa, rola, wartość", level: "A" as const, section: "4.1 Zgodność" },
+    
+    // Level AA criteria
+    { id: "1.2.4", title: "Napisy rozszerzone (na żywo)", level: "AA" as const, section: "1.2 Multimedia" },
+    { id: "1.2.5", title: "Audiodeskrypcja (nagranie)", level: "AA" as const, section: "1.2 Multimedia" },
+    { id: "1.3.4", title: "Orientacja", level: "AA" as const, section: "1.3 Możliwość adaptacji" },
+    { id: "1.3.5", title: "Określenie pożądanej wartości", level: "AA" as const, section: "1.3 Możliwość adaptacji" },
+    { id: "1.4.3", title: "Kontrast (minimalny)", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.4", title: "Zmiana rozmiaru tekstu", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.5", title: "Obrazy tekstu", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.10", title: "Dopasowanie do ekranu", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.11", title: "Kontrast elementów nietekstowych", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.12", title: "Odstępy w tekście", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.13", title: "Treść po najechaniu lub ustawieniu fokusa", level: "AA" as const, section: "1.4 Rozróżnialność" },
+    { id: "2.1.4", title: "Skróty klawiaturowe znaków", level: "AA" as const, section: "2.1 Dostępność z klawiatury" },
+    { id: "2.4.5", title: "Wiele sposobów", level: "AA" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "2.4.6", title: "Nagłówki i etykiety", level: "AA" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "2.4.7", title: "Widoczny fokus", level: "AA" as const, section: "2.4 Możliwość nawigacji" },
+    { id: "3.1.2", title: "Język części", level: "AA" as const, section: "3.1 Czytelność" },
+    { id: "3.2.3", title: "Stała nawigacja", level: "AA" as const, section: "3.2 Przewidywalność" },
+    { id: "3.2.4", title: "Stała identyfikacja", level: "AA" as const, section: "3.2 Przewidywalność" },
+    { id: "3.3.3", title: "Sugestie dotyczące błędów", level: "AA" as const, section: "3.3 Pomoc w wprowadzaniu danych" },
+    { id: "3.3.4", title: "Zapobieganie błędom (prawne, finansowe, dane)", level: "AA" as const, section: "3.3 Pomoc w wprowadzaniu danych" },
+    { id: "4.1.3", title: "Komunikaty o stanie", level: "AA" as const, section: "4.1 Zgodność" },
+    
+    // Level AAA criteria (subset)
+    { id: "1.2.6", title: "Język migowy (nagranie)", level: "AAA" as const, section: "1.2 Multimedia" },
+    { id: "1.2.7", title: "Rozszerzona audiodeskrypcja (nagranie)", level: "AAA" as const, section: "1.2 Multimedia" },
+    { id: "1.2.8", title: "Alternatywa dla mediów (nagranie)", level: "AAA" as const, section: "1.2 Multimedia" },
+    { id: "1.2.9", title: "Tylko audio (na żywo)", level: "AAA" as const, section: "1.2 Multimedia" },
+    { id: "1.4.6", title: "Kontrast (wzmocniony)", level: "AAA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.7", title: "Niska lub brak dźwięku w tle", level: "AAA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.8", title: "Wizualna prezentacja", level: "AAA" as const, section: "1.4 Rozróżnialność" },
+    { id: "1.4.9", title: "Obrazy tekstu (bez wyjątków)", level: "AAA" as const, section: "1.4 Rozróżnialność" },
+  ];
+
+  // Filter criteria based on selected WCAG level
+  if (wcagLevel === 'A') {
+    return allCriteria.filter(c => c.level === 'A');
+  } else if (wcagLevel === 'AA') {
+    return allCriteria.filter(c => c.level === 'A' || c.level === 'AA');
+  } else {
+    return allCriteria; // All levels for AAA
+  }
 }
 
 // Helper function to generate report content
