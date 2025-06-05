@@ -219,13 +219,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/audit/criteria/:criteriaId/screenshot", async (req: Request, res: Response) => {
     try {
       const criteriaId = parseInt(req.params.criteriaId);
-      const { filename, originalName, description } = req.body;
+      const { filename, originalName, description, fileData } = req.body;
       
       const screenshot = await storage.createScreenshot({
         criteriaId,
         filename,
         originalName,
-        description
+        description,
+        fileData
       });
 
       res.json(screenshot);
@@ -949,7 +950,7 @@ function validateKeyboardAccessibility(html: string): any[] {
 
 
 async function generateWordReport(scanResult: any, scanId: number, auditData?: any): Promise<Buffer> {
-  const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, AlignmentType, WidthType, HeadingLevel, BorderStyle } = await import('docx');
+  const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, AlignmentType, WidthType, HeadingLevel, BorderStyle, ImageRun, Media } = await import('docx');
   
   const currentDate = new Date().toLocaleDateString('pl-PL');
   const fullDate = new Date().toLocaleDateString('pl-PL', { 
@@ -2438,23 +2439,88 @@ async function generateWordReport(scanResult: any, scanId: number, auditData?: a
             })
           );
 
-          criterion.screenshots.forEach((screenshot: any) => {
+          criterion.screenshots.forEach((screenshot: any, index: number) => {
+            // Add screenshot title and description
             children.push(
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: `• ${screenshot.originalName}`,
+                    text: `Zrzut ekranu ${index + 1}: ${screenshot.originalName}`,
+                    bold: true,
                     size: 16
                   }),
-                  screenshot.description ? new TextRun({
-                    text: ` - ${screenshot.description}`,
-                    size: 16,
-                    italics: true
-                  }) : new TextRun({ text: "" }),
                 ],
-                spacing: { after: 25 }
+                spacing: { before: 100, after: 50 }
               })
             );
+
+            if (screenshot.description) {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: screenshot.description,
+                      size: 14,
+                      italics: true
+                    }),
+                  ],
+                  spacing: { after: 50 }
+                })
+              );
+            }
+
+            // Add the actual image if fileData exists
+            if (screenshot.fileData) {
+              try {
+                const imageBuffer = Buffer.from(screenshot.fileData, 'base64');
+                
+                children.push(
+                  new Paragraph({
+                    children: [
+                      new ImageRun({
+                        data: imageBuffer,
+                        transformation: {
+                          width: 400,
+                          height: 300,
+                        },
+                        type: "png"
+                      }),
+                    ],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 }
+                  })
+                );
+              } catch (error) {
+                // If image processing fails, show placeholder text
+                children.push(
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `[Obraz niedostępny: ${screenshot.originalName}]`,
+                        size: 14,
+                        color: "999999",
+                        italics: true
+                      }),
+                    ],
+                    spacing: { after: 100 }
+                  })
+                );
+              }
+            } else {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `[Plik załączony: ${screenshot.originalName}]`,
+                      size: 14,
+                      color: "666666",
+                      italics: true
+                    }),
+                  ],
+                  spacing: { after: 100 }
+                })
+              );
+            }
           });
 
           children.push(
