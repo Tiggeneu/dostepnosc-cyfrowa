@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ChevronDown, CheckCircle, Settings, FileText, Globe } from "lucide-react";
+import { ChevronDown, CheckCircle, Settings, FileText, Globe, BookOpen, ExternalLink } from "lucide-react";
 
 export default function Navbar() {
   const [showFunctionsMenu, setShowFunctionsMenu] = useState(false);
+  const [showDocumentationMenu, setShowDocumentationMenu] = useState(false);
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -84,17 +85,98 @@ export default function Navbar() {
               )}
             </div>
             
-            <a href="#documentation" className="text-gray-600 hover:text-gray-800">Dokumentacja</a>
-            <a href="#about" className="text-gray-600 hover:text-gray-800">O nas</a>
+            <div className="relative">
+              <button
+                onClick={() => setShowDocumentationMenu(!showDocumentationMenu)}
+                className="flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+              >
+                Dokumentacja
+                <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showDocumentationMenu ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showDocumentationMenu && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-50">
+                  <div className="p-6">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Dokumentacja WCAG</h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Przewodnik po standardach dostępności internetowej
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-start">
+                        <BookOpen className="h-4 w-4 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">WCAG 2.1 Poziom A</div>
+                          <div className="text-xs text-gray-500">Podstawowe wymagania dostępności</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <BookOpen className="h-4 w-4 text-orange-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">WCAG 2.1 Poziom AA</div>
+                          <div className="text-xs text-gray-500">Standard dla większości stron internetowych</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <BookOpen className="h-4 w-4 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">WCAG 2.1 Poziom AAA</div>
+                          <div className="text-xs text-gray-500">Najwyższy poziom dostępności</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-3 border-t">
+                      <div className="space-y-2">
+                        <a 
+                          href="https://www.w3.org/WAI/WCAG21/quickref/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-2" />
+                          Oficjalna dokumentacja WCAG 2.1
+                        </a>
+                        <a 
+                          href="https://www.gov.pl/web/dostepnosc-cyfrowa" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-2" />
+                          Dostępność cyfrowa - gov.pl
+                        </a>
+                        <a 
+                          href="https://www.deque.com/axe/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-2" />
+                          Dokumentacja axe-core
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
       
       {/* Overlay to close dropdown when clicking outside */}
-      {showFunctionsMenu && (
+      {(showFunctionsMenu || showDocumentationMenu) && (
         <div 
           className="fixed inset-0 z-40" 
-          onClick={() => setShowFunctionsMenu(false)}
+          onClick={() => {
+            setShowFunctionsMenu(false);
+            setShowDocumentationMenu(false);
+          }}
         />
       )}
     </nav>
