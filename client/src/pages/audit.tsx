@@ -20,6 +20,45 @@ export default function AuditPage() {
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const { toast } = useToast();
 
+  // Export Word document mutation
+  const exportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scanId: parseInt(scanId!), format: 'docx' }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Nie udało się wygenerować raportu');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `raport-${scanId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Raport wygenerowany",
+        description: "Dokument Word z audytem automatycznym i manualnym został pobrany.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Błąd generowania",
+        description: "Nie udało się wygenerować raportu Word.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Start audit session mutation
   const startAuditMutation = useMutation({
     mutationFn: async () => {
@@ -194,11 +233,23 @@ export default function AuditPage() {
             Powrót do wyników skanowania
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold mb-2">Audyt Manualny WCAG</h1>
-        <div className="flex items-center gap-4 text-sm text-gray-600">
-          <span>Audytor: <strong>{auditSession.auditorName}</strong></span>
-          <span>Skanowanie: <strong>#{scanId}</strong></span>
-          <span>Status: <strong>{auditSession.status === 'in_progress' ? 'W trakcie' : 'Zakończony'}</strong></span>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Audyt Manualny WCAG</h1>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span>Audytor: <strong>{auditSession.auditorName}</strong></span>
+              <span>Skanowanie: <strong>#{scanId}</strong></span>
+              <span>Status: <strong>{auditSession.status === 'in_progress' ? 'W trakcie' : 'Zakończony'}</strong></span>
+            </div>
+          </div>
+          <Button
+            onClick={() => exportMutation.mutate()}
+            disabled={exportMutation.isPending}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            {exportMutation.isPending ? "Generowanie..." : "Pobierz raport Word"}
+          </Button>
         </div>
       </div>
 
