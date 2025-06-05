@@ -82,10 +82,10 @@ export default function AuditPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
-            <Link href="/">
+            <Link href={`/?scanId=${scanId}`}>
               <Button variant="ghost" className="mb-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Powrót do głównej
+                Powrót do wyników skanowania
               </Button>
             </Link>
             <h1 className="text-3xl font-bold mb-2">Audyt Manualny WCAG</h1>
@@ -188,10 +188,10 @@ export default function AuditPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/">
+        <Link href={`/?scanId=${scanId}`}>
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Powrót do głównej
+            Powrót do wyników skanowania
           </Button>
         </Link>
         <h1 className="text-3xl font-bold mb-2">Audyt Manualny WCAG</h1>
@@ -331,14 +331,190 @@ function CriterionCard({ criterion, onUpdate }: CriterionCardProps) {
       </div>
 
       {showScreenshots && (
-        <div className="border-t pt-3">
-          <h5 className="font-medium mb-2">Zrzuty ekranu</h5>
-          <div className="text-center py-8 text-gray-500">
-            <FileImage className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>Funkcja dodawania zrzutów ekranu zostanie wkrótce dodana</p>
-          </div>
-        </div>
+        <ScreenshotManager criteriaId={criterion.id} />
       )}
+    </div>
+  );
+}
+
+interface ScreenshotManagerProps {
+  criteriaId: number;
+}
+
+function ScreenshotManager({ criteriaId }: ScreenshotManagerProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [description, setDescription] = useState("");
+  const { toast } = useToast();
+
+  // Get screenshots for this criteria
+  const { data: screenshots, isLoading } = useQuery({
+    queryKey: [`/api/audit/criteria/${criteriaId}/screenshots`],
+  });
+
+  // Upload screenshot mutation
+  const uploadMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedFile) throw new Error("Nie wybrano pliku");
+
+      // Convert file to base64 for simple storage
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(selectedFile);
+      });
+
+      const response = await apiRequest("POST", `/api/audit/criteria/${criteriaId}/screenshot`, {
+        filename: `${criteriaId}_${Date.now()}_${selectedFile.name}`,
+        originalName: selectedFile.name,
+        description,
+        fileData: base64
+      });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/audit/criteria/${criteriaId}/screenshots`] });
+      setSelectedFile(null);
+      setDescription("");
+      toast({
+        title: "Zrzut ekranu dodany",
+        description: "Plik został pomyślnie przesłany.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Błąd przesyłania",
+        description: "Nie udało się przesłać zrzutu ekranu.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Nieprawidłowy typ pliku",
+          description: "Można przesyłać tylko pliki obrazów (JPG, PNG, GIF, etc.).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Plik za duży",
+          description: "Maksymalny rozmiar pliku to 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
+  return (
+    <div className="border-t pt-3">
+      <h5 className="font-medium mb-3">Zrzuty ekranu</h5>
+      
+      <div className="space-y-3 mb-4">
+        <div>
+          <label className="text-sm font-medium mb-1 block">
+            Wybierz plik obrazu
+          </label>
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="cursor-pointer"
+          />
+        </div>
+        
+        {selectedFile && (
+          <>
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Opis zrzutu ekranu (opcjonalnie)
+              </label>
+              <Input
+                placeholder="np. Problem z kontrastem przycisku"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => uploadMutation.mutate()}
+                disabled={uploadMutation.isPending}
+                size="sm"
+              >
+                <Upload className="w-4 h-4 mr-1" />
+                {uploadMutation.isPending ? "Przesyłanie..." : "Prześlij"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedFile(null);
+                  setDescription("");
+                }}
+              >
+                Anuluj
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        {isLoading && (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+          </div>
+        )}
+        
+        {screenshots && screenshots.length > 0 ? (
+          screenshots.map((screenshot: any) => (
+            <div key={screenshot.id} className="flex items-center justify-between p-2 border rounded">
+              <div className="flex items-center gap-2">
+                <FileImage className="w-4 h-4 text-blue-600" />
+                <div>
+                  <div className="text-sm font-medium">{screenshot.originalName}</div>
+                  {screenshot.description && (
+                    <div className="text-xs text-gray-500">{screenshot.description}</div>
+                  )}
+                  <div className="text-xs text-gray-400">
+                    {new Date(screenshot.uploadedAt).toLocaleString('pl-PL')}
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // Delete functionality would be implemented here
+                  toast({
+                    title: "Funkcja usuwania",
+                    description: "Zostanie wkrótce dodana.",
+                  });
+                }}
+                className="text-red-600 hover:text-red-700"
+              >
+                Usuń
+              </Button>
+            </div>
+          ))
+        ) : (
+          !isLoading && (
+            <div className="text-center py-4 text-gray-500">
+              <FileImage className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Brak zrzutów ekranu dla tego kryterium</p>
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }

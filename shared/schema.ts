@@ -47,6 +47,7 @@ export const criteriaScreenshots = pgTable("criteria_screenshots", {
   filename: text("filename").notNull(),
   originalName: text("original_name").notNull(),
   description: text("description"),
+  fileData: text("file_data"), // Base64 encoded image data
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 
