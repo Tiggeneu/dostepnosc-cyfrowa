@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CheckCircle, XCircle, Minus, Upload, FileImage } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Minus, Upload, FileImage, Download } from "lucide-react";
 import { Link } from "wouter";
 
 export default function AuditPage() {

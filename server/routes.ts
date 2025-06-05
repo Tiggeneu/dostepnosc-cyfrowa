@@ -82,7 +82,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (format === 'docx') {
-        const docxBuffer = await generateWordReport(scanResult, scanId);
+        // Check for manual audit data
+        const auditSession = await storage.getAuditSessionByScanId(scanId);
+        let auditData = null;
+        
+        if (auditSession) {
+          const criteria = await storage.getWcagCriteriaBySession(auditSession.id);
+          auditData = {
+            session: auditSession,
+            criteria: criteria
+          };
+        }
+        
+        const docxBuffer = await generateWordReport(scanResult, scanId, auditData);
         
         // Extract domain from URL for filename
         let domainName = '';
@@ -916,7 +928,7 @@ function validateKeyboardAccessibility(html: string): any[] {
 
 
 
-async function generateWordReport(scanResult: any, scanId: number): Promise<Buffer> {
+async function generateWordReport(scanResult: any, scanId: number, auditData?: any): Promise<Buffer> {
   const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, AlignmentType, WidthType, HeadingLevel, BorderStyle } = await import('docx');
   
   const currentDate = new Date().toLocaleDateString('pl-PL');
@@ -2191,6 +2203,222 @@ async function generateWordReport(scanResult: any, scanId: number): Promise<Buff
       spacing: { after: 200 }
     })
   );
+
+  // Manual audit section
+  if (auditData && auditData.session) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Audyt Manualny WCAG",
+            bold: true,
+            size: 28,
+            color: "1e40af"
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 600, after: 200 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Audyt przeprowadzony przez: ${auditData.session.auditorName}`,
+            bold: true,
+            size: 22
+          }),
+        ],
+        spacing: { after: 200 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Data audytu: ${new Date(auditData.session.startedAt).toLocaleDateString('pl-PL')}`,
+            size: 20
+          }),
+        ],
+        spacing: { after: 400 }
+      })
+    );
+
+    // Group criteria by category
+    const manualCriteriaByCategory = auditData.criteria.reduce((acc: any, criterion: any) => {
+      const categoryMatch = criterion.criteriaId.match(/^(\d+)/);
+      const category = categoryMatch ? categoryMatch[1] : 'Inne';
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(criterion);
+      return acc;
+    }, {});
+
+    // Manual audit results summary
+    const totalCriteria = auditData.criteria.length;
+    const passedCriteria = auditData.criteria.filter((c: any) => c.status === 'passed').length;
+    const failedCriteria = auditData.criteria.filter((c: any) => c.status === 'failed').length;
+    const notApplicableCriteria = auditData.criteria.filter((c: any) => c.status === 'not_applicable').length;
+    const notEvaluatedCriteria = auditData.criteria.filter((c: any) => c.status === 'not_evaluated').length;
+
+    // Manual audit summary table
+    const manualSummaryTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: { style: BorderStyle.SINGLE, size: 1 },
+        bottom: { style: BorderStyle.SINGLE, size: 1 },
+        left: { style: BorderStyle.SINGLE, size: 1 },
+        right: { style: BorderStyle.SINGLE, size: 1 },
+        insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
+        insideVertical: { style: BorderStyle.SINGLE, size: 1 },
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: passedCriteria.toString(), bold: true, size: 36, color: "16a34a" })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 150, after: 150 }
+                }),
+                new Paragraph({
+                  children: [new TextRun({ text: "Spełnione", bold: true, size: 20 })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 150 }
+                })
+              ],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: "f0fdf4" }
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: failedCriteria.toString(), bold: true, size: 36, color: "dc2626" })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 150, after: 150 }
+                }),
+                new Paragraph({
+                  children: [new TextRun({ text: "Niespełnione", bold: true, size: 20 })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 150 }
+                })
+              ],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: "fef2f2" }
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: notEvaluatedCriteria.toString(), bold: true, size: 36, color: "d97706" })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 150, after: 150 }
+                }),
+                new Paragraph({
+                  children: [new TextRun({ text: "Nieoceninone", bold: true, size: 20 })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 150 }
+                })
+              ],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: "fffbeb" }
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: notApplicableCriteria.toString(), bold: true, size: 36, color: "6b7280" })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 150, after: 150 }
+                }),
+                new Paragraph({
+                  children: [new TextRun({ text: "Nie dotyczy", bold: true, size: 20 })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 150 }
+                })
+              ],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: "f9fafb" }
+            }),
+          ],
+        }),
+      ],
+    });
+
+    children.push(manualSummaryTable);
+
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Szczegółowe wyniki audytu manualnego",
+            bold: true,
+            size: 24,
+            color: "1e40af"
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 400, after: 200 }
+      })
+    );
+
+    // Display criteria that were evaluated (passed or failed)
+    const evaluatedCriteria = auditData.criteria.filter((c: any) => 
+      c.status === 'passed' || c.status === 'failed'
+    );
+
+    if (evaluatedCriteria.length > 0) {
+      evaluatedCriteria.forEach((criterion: any) => {
+        const statusText = criterion.status === 'passed' ? 'SPEŁNIONE' : 'NIESPEŁNIONE';
+        const statusColor = criterion.status === 'passed' ? '16a34a' : 'dc2626';
+
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${criterion.criteriaId}: ${criterion.title}`,
+                bold: true,
+                size: 20
+              }),
+              new TextRun({
+                text: ` - ${statusText}`,
+                bold: true,
+                size: 20,
+                color: statusColor
+              }),
+            ],
+            spacing: { before: 200, after: 100 }
+          })
+        );
+
+        if (criterion.notes) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Uwagi audytora: ",
+                  bold: true,
+                  size: 18
+                }),
+                new TextRun({
+                  text: criterion.notes,
+                  size: 18
+                }),
+              ],
+              spacing: { after: 200 }
+            })
+          );
+        }
+      });
+    } else {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Brak ocenionych kryteriów w audycie manualnym.",
+              size: 20,
+              italics: true
+            }),
+          ],
+          spacing: { after: 200 }
+        })
+      );
+    }
+  }
 
   // Create document with default font settings
   const doc = new Document({
