@@ -1,130 +1,69 @@
-import { 
-  scanResults, auditSessions, wcagCriteria, criteriaScreenshots,
-  type ScanResult, type InsertScanResult,
-  type AuditSession, type InsertAuditSession,
-  type WcagCriteria, type InsertWcagCriteria,
-  type CriteriaScreenshot, type InsertCriteriaScreenshot
-} from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import type { ScanResult } from '../shared/schema';
 
-export interface IStorage {
-  createScanResult(scanResult: InsertScanResult): Promise<ScanResult>;
-  getScanResult(id: number): Promise<ScanResult | undefined>;
-  updateScanResult(id: number, updates: Partial<InsertScanResult>): Promise<ScanResult | undefined>;
-  getAllScanResults(): Promise<ScanResult[]>;
-  
-  // Manual audit methods
-  createAuditSession(auditSession: InsertAuditSession): Promise<AuditSession>;
-  getAuditSession(id: number): Promise<AuditSession | undefined>;
-  getAuditSessionByScanId(scanId: number): Promise<AuditSession | undefined>;
-  updateAuditSession(id: number, updates: Partial<InsertAuditSession>): Promise<AuditSession | undefined>;
-  
-  // WCAG criteria methods
-  createWcagCriteria(criteria: InsertWcagCriteria): Promise<WcagCriteria>;
-  getWcagCriteriaBySession(auditSessionId: number): Promise<WcagCriteria[]>;
-  updateWcagCriteria(id: number, updates: Partial<InsertWcagCriteria>): Promise<WcagCriteria | undefined>;
-  
-  // Screenshot methods
-  createScreenshot(screenshot: InsertCriteriaScreenshot): Promise<CriteriaScreenshot>;
-  getScreenshotsByCriteria(criteriaId: number): Promise<CriteriaScreenshot[]>;
-  deleteScreenshot(id: number): Promise<boolean>;
+const RESULTS_DIR = path.join(process.cwd(), 'scan-results');
+
+// Ensure results directory exists
+if (!fs.existsSync(RESULTS_DIR)) {
+  fs.mkdirSync(RESULTS_DIR, { recursive: true });
 }
 
-export class DatabaseStorage implements IStorage {
-  async createScanResult(insertScanResult: InsertScanResult): Promise<ScanResult> {
-    const [scanResult] = await db
-      .insert(scanResults)
-      .values(insertScanResult)
-      .returning();
+export const storage = {
+  saveScanResult: async (result: Partial<ScanResult>): Promise<ScanResult> => {
+    const id = uuidv4();
+    const scanResult: ScanResult = {
+      id,
+      url: result.url || '',
+      status: result.status || 'pending',
+      violations: result.violations || [],
+      passedTests: result.passedTests || 0,
+      elementsScanned: result.elementsScanned || 0,
+      complianceScore: result.complianceScore || 0,
+      wcagLevel: result.wcagLevel || 'AA',
+      scanDate: new Date().toISOString(),
+      errorMessage: result.errorMessage
+    };
+
+    const filePath = path.join(RESULTS_DIR, `${id}.json`);
+    await fs.promises.writeFile(filePath, JSON.stringify(scanResult, null, 2));
     return scanResult;
-  }
+  },
 
-  async getScanResult(id: number): Promise<ScanResult | undefined> {
-    const [scanResult] = await db.select().from(scanResults).where(eq(scanResults.id, id));
-    return scanResult || undefined;
-  }
+  getScanResult: async (id: string): Promise<ScanResult | null> => {
+    const filePath = path.join(RESULTS_DIR, `${id}.json`);
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    const content = await fs.promises.readFile(filePath, 'utf-8');
+    return JSON.parse(content);
+  },
 
-  async updateScanResult(id: number, updates: Partial<InsertScanResult>): Promise<ScanResult | undefined> {
-    const [scanResult] = await db
-      .update(scanResults)
-      .set(updates)
-      .where(eq(scanResults.id, id))
-      .returning();
-    return scanResult || undefined;
-  }
+  updateScanResult: async (id: string, updates: Partial<ScanResult>): Promise<ScanResult | null> => {
+    const filePath = path.join(RESULTS_DIR, `${id}.json`);
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    
+    const content = await fs.promises.readFile(filePath, 'utf-8');
+    const currentResult = JSON.parse(content);
+    const updatedResult = { ...currentResult, ...updates };
+    
+    await fs.promises.writeFile(filePath, JSON.stringify(updatedResult, null, 2));
+    return updatedResult;
+  },
 
-  async getAllScanResults(): Promise<ScanResult[]> {
-    return await db.select().from(scanResults);
+  getAllScanResults: async (): Promise<ScanResult[]> => {
+    const files = await fs.promises.readdir(RESULTS_DIR);
+    const results = await Promise.all(
+      files
+        .filter(file => file.endsWith('.json'))
+        .map(async (file) => {
+          const content = await fs.promises.readFile(path.join(RESULTS_DIR, file), 'utf-8');
+          return JSON.parse(content);
+        })
+    );
+    return results;
   }
-
-  // Manual audit methods
-  async createAuditSession(auditSession: InsertAuditSession): Promise<AuditSession> {
-    const [session] = await db
-      .insert(auditSessions)
-      .values(auditSession)
-      .returning();
-    return session;
-  }
-
-  async getAuditSession(id: number): Promise<AuditSession | undefined> {
-    const [session] = await db.select().from(auditSessions).where(eq(auditSessions.id, id));
-    return session || undefined;
-  }
-
-  async getAuditSessionByScanId(scanId: number): Promise<AuditSession | undefined> {
-    const [session] = await db.select().from(auditSessions).where(eq(auditSessions.scanId, scanId));
-    return session || undefined;
-  }
-
-  async updateAuditSession(id: number, updates: Partial<InsertAuditSession>): Promise<AuditSession | undefined> {
-    const [session] = await db
-      .update(auditSessions)
-      .set(updates)
-      .where(eq(auditSessions.id, id))
-      .returning();
-    return session || undefined;
-  }
-
-  // WCAG criteria methods
-  async createWcagCriteria(criteria: InsertWcagCriteria): Promise<WcagCriteria> {
-    const [criteriaResult] = await db
-      .insert(wcagCriteria)
-      .values(criteria)
-      .returning();
-    return criteriaResult;
-  }
-
-  async getWcagCriteriaBySession(auditSessionId: number): Promise<WcagCriteria[]> {
-    return await db.select().from(wcagCriteria).where(eq(wcagCriteria.auditSessionId, auditSessionId));
-  }
-
-  async updateWcagCriteria(id: number, updates: Partial<InsertWcagCriteria>): Promise<WcagCriteria | undefined> {
-    const [criteriaResult] = await db
-      .update(wcagCriteria)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(wcagCriteria.id, id))
-      .returning();
-    return criteriaResult || undefined;
-  }
-
-  // Screenshot methods
-  async createScreenshot(screenshot: InsertCriteriaScreenshot): Promise<CriteriaScreenshot> {
-    const [screenshotResult] = await db
-      .insert(criteriaScreenshots)
-      .values(screenshot)
-      .returning();
-    return screenshotResult;
-  }
-
-  async getScreenshotsByCriteria(criteriaId: number): Promise<CriteriaScreenshot[]> {
-    return await db.select().from(criteriaScreenshots).where(eq(criteriaScreenshots.criteriaId, criteriaId));
-  }
-
-  async deleteScreenshot(id: number): Promise<boolean> {
-    const result = await db.delete(criteriaScreenshots).where(eq(criteriaScreenshots.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-}
-
-export const storage = new DatabaseStorage();
+};

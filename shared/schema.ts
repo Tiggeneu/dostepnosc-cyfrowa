@@ -1,83 +1,49 @@
-import { pgTable, text, serial, integer, jsonb, timestamp, boolean } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
-import { relations } from "drizzle-orm";
+// Basic types and interfaces for the accessibility scanner
+export interface ScanResult {
+  id: string;
+  url: string;
+  status: 'pending' | 'completed' | 'failed';
+  violations: Violation[];
+  passedTests: number;
+  elementsScanned: number;
+  complianceScore: number;
+  wcagLevel: 'A' | 'AA' | 'AAA';
+  scanDate: string;
+  errorMessage?: string;
+}
 
-export const scanResults = pgTable("scan_results", {
-  id: serial("id").primaryKey(),
-  url: text("url").notNull(),
-  status: text("status").notNull(), // 'pending', 'completed', 'failed'
-  violations: jsonb("violations").notNull().default([]),
-  passedTests: integer("passed_tests").notNull().default(0),
-  elementsScanned: integer("elements_scanned").notNull().default(0),
-  complianceScore: integer("compliance_score").notNull().default(0),
-  wcagLevel: text("wcag_level").notNull().default('AA'), // 'A', 'AA', 'AAA'
-  scanDate: timestamp("scan_date").defaultNow().notNull(),
-  errorMessage: text("error_message"),
-});
+// Violation interface for type safety
+export interface Violation {
+  id: string;
+  impact: 'minor' | 'moderate' | 'serious' | 'critical';
+  tags: string[];
+  description: string;
+  help: string;
+  helpUrl: string;
+  nodes: ViolationNode[];
+}
 
-// Manual audit sessions
-export const auditSessions = pgTable("audit_sessions", {
-  id: serial("id").primaryKey(),
-  scanId: integer("scan_id").notNull().references(() => scanResults.id),
-  auditorName: text("auditor_name").notNull(),
-  status: text("status").notNull().default('in_progress'), // 'in_progress', 'completed'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  completedAt: timestamp("completed_at"),
-  notes: text("notes"),
-});
+export interface ViolationNode {
+  html: string;
+  target: string[];
+  failureSummary?: string;
+}
 
-// WCAG criteria evaluation
-export const wcagCriteria = pgTable("wcag_criteria", {
-  id: serial("id").primaryKey(),
-  auditSessionId: integer("audit_session_id").notNull().references(() => auditSessions.id),
-  criteriaId: text("criteria_id").notNull(), // e.g., "1.1.1", "1.2.1"
-  title: text("title").notNull(),
-  level: text("level").notNull(), // 'A', 'AA', 'AAA'
-  status: text("status").notNull().default('not_evaluated'), // 'passed', 'failed', 'not_applicable', 'not_evaluated'
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export interface ScanRequest {
+  url: string;
+  wcagLevel: 'A' | 'AA' | 'AAA';
+}
 
-// Screenshots for criteria
-export const criteriaScreenshots = pgTable("criteria_screenshots", {
-  id: serial("id").primaryKey(),
-  criteriaId: integer("criteria_id").notNull().references(() => wcagCriteria.id),
-  filename: text("filename").notNull(),
-  originalName: text("original_name").notNull(),
-  description: text("description"),
-  fileData: text("file_data"), // Base64 encoded image data
-  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
-});
+export interface ScanResponse {
+  scanId: string;
+  status: string;
+  message: string;
+}
 
-// Relations
-export const scanResultsRelations = relations(scanResults, ({ many }) => ({
-  auditSessions: many(auditSessions),
-}));
-
-export const auditSessionsRelations = relations(auditSessions, ({ one, many }) => ({
-  scanResult: one(scanResults, {
-    fields: [auditSessions.scanId],
-    references: [scanResults.id],
-  }),
-  wcagCriteria: many(wcagCriteria),
-}));
-
-export const wcagCriteriaRelations = relations(wcagCriteria, ({ one, many }) => ({
-  auditSession: one(auditSessions, {
-    fields: [wcagCriteria.auditSessionId],
-    references: [auditSessions.id],
-  }),
-  screenshots: many(criteriaScreenshots),
-}));
-
-export const criteriaScreenshotsRelations = relations(criteriaScreenshots, ({ one }) => ({
-  criteria: one(wcagCriteria, {
-    fields: [criteriaScreenshots.criteriaId],
-    references: [wcagCriteria.id],
-  }),
-}));
+export interface ReportExportRequest {
+  scanId: string;
+  format: 'pdf' | 'json' | 'csv' | 'docx';
+}
 
 // Insert schemas
 export const insertScanResultSchema = createInsertSchema(scanResults).omit({
